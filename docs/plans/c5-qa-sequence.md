@@ -5,7 +5,7 @@ sequenceDiagram
     participant OrderRepository
     participant Order
     participant QuestionRepository
-    participant OrderTemplate as order_detail.html
+    participant OrderTemplate as account/order_detail.html
 
     Customer->>AccountController: Open own order
     AccountController->>OrderRepository: getById(orderId)
