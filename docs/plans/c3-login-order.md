@@ -17,10 +17,10 @@ sequenceDiagram
     Note over Customer,DB: Login
     Customer->>View: open checkout
     View->>Controller: GET /checkout
-    Controller-->>View: redirect to /auth/login
+    Controller-->>View: redirect to /account/login
     View-->>Customer: login form
     Customer->>View: submit email and password
-    View->>Controller: POST /auth/login
+    View->>Controller: POST /account/login
     Controller->>Users: by_email(email)
     Users->>DB: SELECT user
     DB-->>Users: user row
