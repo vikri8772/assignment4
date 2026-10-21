@@ -20,7 +20,7 @@ flowchart LR
 
     subgraph Model [Model]
         FoodItem
-        EventType
+        Event
         Diet
         FoodItemRepository
     end
