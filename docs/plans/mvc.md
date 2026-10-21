@@ -11,10 +11,13 @@ flowchart LR
     subgraph View [View]
         subgraph CustomerViews [Customer site]
             menu.html
+            order_detail.html
         end
         subgraph AdminViews [Admin panel]
             items_overview.html
             item_form.html
+            questions.html
+            question_form.html
         end
     end
 
@@ -23,6 +26,9 @@ flowchart LR
         Event
         Diet
         FoodItemRepository
+        Question
+        Answer
+        QuestionRepository
     end
 
     ShopController --> CustomerViews
@@ -30,4 +36,5 @@ flowchart LR
     ShopController --> Model
     AdminController --> Model
     FoodItemRepository --> Storage[(Database)]
+    QuestionRepository --> Storage[(Database)]
 ````
