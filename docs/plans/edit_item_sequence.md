@@ -11,7 +11,7 @@ sequenceDiagram
     FoodItemRepository-->>AdminController: FoodItem
     AdminController->>EditTemplate: render(item)
     EditTemplate-->>AdminController: Form with current values
-    AdminController-->>Admin: Show edited form
+    AdminController-->>Admin: Show unedited form
 
     Admin->>AdminController: Submit changes 
     AdminController->>FoodItemRepository: getById(id)
