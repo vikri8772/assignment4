@@ -42,6 +42,7 @@ classDiagram
         +String deliveryAddress
         +OrderStatus orderStatus
         +PaymentStatus paymentStatus
+        +belongsTo(String userId) Boolean
     }
 
     class GuestGroup {
