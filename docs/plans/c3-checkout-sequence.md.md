@@ -21,7 +21,7 @@ sequenceDiagram
     View-->>Customer: login form
     Customer->>View: submit email and password
     View->>Controller: POST /account/login
-    Controller->>Users: by_email(email)
+    Controller->>Users: getByEmail(email)
     Users->>DB: SELECT user
     DB-->>Users: user row
     Users-->>Controller: user
@@ -43,7 +43,7 @@ sequenceDiagram
         Note right of Controller: Event type, date not in the past, guests 1–10,000,<br/>address length, group sizes add up to guests
 
         alt data valid
-            Controller->>Orders: create(user, event, date, guests, address, cart lines, groups)
+            Controller->>Orders: add(order)
             Orders->>DB: INSERT order, items and groups (one transaction)
             DB-->>Orders: order id
             Orders-->>Controller: order id
