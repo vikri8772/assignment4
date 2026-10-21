@@ -1,4 +1,4 @@
-# C3 Order – activity diagram
+# C4 Order – activity diagram
 
 ```mermaid
 flowchart TD
