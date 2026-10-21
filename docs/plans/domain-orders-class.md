@@ -17,13 +17,31 @@ classDiagram
         ADMIN
     }
 
+    class OrderStatus {
+            <<enumeration>>
+            SUBMITTED
+            APPROVED
+            IN_PREPARATION
+            DELIVERED
+            REJECTED
+            CANCELLED
+        }
+    
+    class PaymentStatus {
+            <<enumeration>>
+            NOT_PAID
+            DEPOSIT_PAID
+            INVOICED
+            PAID
+        }
+
     class Order {
         +String orderId
         +Date eventDate
         +int numberOfGuests
         +String deliveryAddress
-        +String orderStatus
-        +String paymentStatus
+        +OrderStatus orderStatus
+        +PaymentStatus paymentStatus
     }
 
     class GuestGroup {
@@ -43,5 +61,7 @@ classDiagram
     User "1" -- "0..*" Order : places
     Order "1" *-- "1..*" GuestGroup : includes
     Order "1" *-- "1..*" OrderItem : contains
+    Order --> OrderStatus : has
+    Order --> PaymentStatus : has
 
 ```
