@@ -51,11 +51,14 @@ classDiagram
         +String dietaryNotes
     }
 
-    class OrderItem {
+    class OrderLine {
+        +String foodItemId
         +String itemName
         +int quantity
         +Decimal unitPrice
     }
+
+    class FoodItem
 
     User --> Role : has
     User "1" -- "0..*" Order : places
@@ -63,5 +66,6 @@ classDiagram
     Order "1" *-- "1..*" OrderItem : contains
     Order --> OrderStatus : has
     Order --> PaymentStatus : has
+    OrderItem "*" --> "1" FoodItem : refers to
 
 ```
