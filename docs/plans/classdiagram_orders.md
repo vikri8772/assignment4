@@ -45,4 +45,4 @@ classDiagram
     Administrator --> Order : manages
     Order "1" *-- "1..*" GuestGroup : includes
     Order "1" *-- "1..*" OrderItem : contains
-    ```
+```
