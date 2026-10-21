@@ -1,9 +1,6 @@
-# C4 My orders – activity diagram
+# C3 Order – activity diagram
 
 ```mermaid
----
-title: C3 Order — Customer activity diagram
----
 flowchart TD
     Start((Start)) --> Open["Customer opens order form"]
     Open --> SignedIn{"Signed in?"}
