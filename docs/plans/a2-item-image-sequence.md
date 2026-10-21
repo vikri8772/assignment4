@@ -10,7 +10,7 @@ sequenceDiagram
 
     Admin->>FormTemplate: Choose image file
     FormTemplate->>PreviewJS: change event
-    PreviewJS->>PreviewJS: check type (jpg/png/webp) and size (≤ 5 MB)
+    PreviewJS->>PreviewJS: check type (jpg/png) and size (≤ 5 MB)
     alt file OK
         PreviewJS-->>Admin: Show preview next to current image
     else file not OK
