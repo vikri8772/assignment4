@@ -2,21 +2,19 @@
 classDiagram
     direction TB
 
-    class Customer {
+    class User {
+        +String userId
         +String name
         +String email
-        +register()
-        +login()
-        +submitOrder()
-        +viewOwnOrders()
+        +String passwordHash
+        +Role role
+        +isAdmin() Boolean
     }
 
-    class Administrator {
-        +viewAllOrders()
-        +filterByStatus()
-        +filterByEventDate()
-        +updateOrderStatus()
-        +updatePaymentStatus()
+    class Role {
+        <<enumeration>>
+        CUSTOMER
+        ADMIN
     }
 
     class Order {
@@ -41,8 +39,9 @@ classDiagram
         +Decimal unitPrice
     }
 
-    Customer "1" -- "0..*" Order : places
-    Administrator --> Order : manages
+    User --> Role : has
+    User "1" -- "0..*" Order : places
     Order "1" *-- "1..*" GuestGroup : includes
     Order "1" *-- "1..*" OrderItem : contains
+
 ```
