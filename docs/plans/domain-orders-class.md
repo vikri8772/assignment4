@@ -63,9 +63,9 @@ classDiagram
     User --> Role : has
     User "1" -- "0..*" Order : places
     Order "1" *-- "1..*" GuestGroup : includes
-    Order "1" *-- "1..*" OrderItem : contains
+    Order "1" *-- "1..*" OrderLine : contains
     Order --> OrderStatus : has
     Order --> PaymentStatus : has
-    OrderItem "*" --> "1" FoodItem : refers to
+    OrderLine "*" --> "1" FoodItem : refers to
 
 ```
