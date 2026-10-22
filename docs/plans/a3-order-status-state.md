@@ -1,4 +1,6 @@
-# A3 Orders – state machine
+# A3 Order status – state machine
+
+The allowed changes of an order's status. Payment status is tracked separately in `a3-payment-status-state.md`.
 
 ```mermaid
 stateDiagram-v2

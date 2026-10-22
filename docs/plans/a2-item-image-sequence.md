@@ -1,3 +1,7 @@
+# A2 Item image – sequence diagram
+
+How an admin uploads an image for a food item, with a preview in the browser before anything is saved.
+
 ````mermaid
 sequenceDiagram
     actor Admin

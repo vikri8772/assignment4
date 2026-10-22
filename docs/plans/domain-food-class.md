@@ -1,3 +1,7 @@
+# Food items – class diagram
+
+The domain classes for food items, events, diets and the `FoodItemRepository`.
+
 ```mermaid
    classDiagram
     class FoodItem {

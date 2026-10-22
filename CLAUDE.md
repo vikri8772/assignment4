@@ -5,7 +5,7 @@ INFO212 obligatory assignment 4. A first version of the ordering system for Ekte
 - **Customer site:** a menu grouped by event type (C1), a cart that enforces minimum order quantities (C2), an order form with notes per guest group (C3), "My orders" (C4), and questions about an order (C5).
 - **Admin panel:** food items (A1), item images with a preview before saving (A2), an order list with filters and per-order status management (A3), and answers to customer questions (A4).
 
-Design diagrams (Mermaid) are in `docs/plans/`. Read the ones that apply before changing a feature.
+Design diagrams (Mermaid) are in `docs/plans/`. `docs/plans/README.md` lists which diagrams belong to each requirement. Read the ones that apply before changing a feature.
 
 ## Architecture (MVC)
 
@@ -23,7 +23,7 @@ seed.py
 
 - Controllers call repositories and domain classes. They never access storage directly.
 - Storage is SQLite for now. Neo4j will replace it in assignment 5, so keep all storage code behind the repository classes (`FoodItemRepository`, `OrderRepository`, ...).
-- Order status: submitted → approved → in preparation → delivered, or rejected/cancelled (`docs/plans/A3orders_statemachine.md`). Payment status is tracked separately from order status.
+- Order status: submitted → approved → in preparation → delivered, or rejected/cancelled (`docs/plans/a3-order-status-state.md`). Payment status is tracked separately from order status.
 
 ## Running and testing
 

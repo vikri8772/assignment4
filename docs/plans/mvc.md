@@ -1,40 +1,85 @@
+# MVC overview
+
+All controllers, views and models in Ekte Mat Online and how they connect. Controllers only reach storage through the repository classes, so SQLite can be swapped for Neo4j in assignment 5.
+
 ````mermaid
 flowchart LR
     Customer([Customer]) --> ShopController
+    Customer --> AccountController
     Admin([Admin]) --> AdminController
 
     subgraph Controller [Controller]
-        ShopController
-        AdminController
+        ShopController["ShopController<br/>menu, cart, checkout"]
+        AccountController["AccountController<br/>login, my orders, questions"]
+        AdminController["AdminController<br/>items, images, orders, answers"]
     end
 
+    AdminCheck["Every AdminController route<br/>requires user.isAdmin()"] -.- AdminController
+
     subgraph View [View]
-        subgraph CustomerViews [Customer site]
-            menu.html
-            order_detail.html
+        subgraph ShopViews [templates/shop]
+            shopMenu[menu.html]
+            shopCart[cart.html]
+            shopCheckout[checkout.html]
         end
-        subgraph AdminViews [Admin panel]
-            items_overview.html
-            item_form.html
-            questions.html
-            question_form.html
+        subgraph AccountViews [templates/account]
+            accLogin[login.html]
+            accOrders[orders.html]
+            accOrderDetail["order_detail.html<br/>(with questions)"]
+        end
+        subgraph AdminViews [templates/admin]
+            admItems[items_overview.html]
+            admItemForm[item_form.html]
+            admOrders[orders.html]
+            admOrderDetail[order_detail.html]
+            admQuestions[questions.html]
+            admQuestionForm[question_form.html]
+        end
+        subgraph Static [static]
+            previewJS[js/image_preview.js]
+            uploads[uploads/]
         end
     end
 
     subgraph Model [Model]
-        FoodItem
-        Event
-        Diet
-        FoodItemRepository
-        Question
-        Answer
-        QuestionRepository
+        subgraph FoodModel [Food items]
+            FoodItem
+            Event
+            Diet
+            FoodItemRepository
+        end
+        subgraph OrderModel [Users and orders]
+            User
+            Role
+            Order
+            OrderLine
+            GuestGroup
+            UserRepository
+            OrderRepository
+        end
+        subgraph QAModel [Questions]
+            Question
+            Answer
+            QuestionRepository
+        end
     end
 
-    ShopController --> CustomerViews
+    ShopController --> ShopViews
+    AccountController --> AccountViews
     AdminController --> AdminViews
-    ShopController --> Model
-    AdminController --> Model
-    FoodItemRepository --> Storage[(Database)]
-    QuestionRepository --> Storage[(Database)]
+    admItemForm --> previewJS
+    AdminController --> uploads
+
+    ShopController --> FoodModel
+    ShopController --> OrderModel
+    AccountController --> OrderModel
+    AccountController --> QAModel
+    AdminController --> FoodModel
+    AdminController --> OrderModel
+    AdminController --> QAModel
+
+    FoodItemRepository --> Storage[(SQLite)]
+    UserRepository --> Storage
+    OrderRepository --> Storage
+    QuestionRepository --> Storage
 ````

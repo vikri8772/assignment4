@@ -1,3 +1,7 @@
+# C2 Shopping cart – activity diagram
+
+How the customer builds the cart, with minimum order quantities checked for each item, until they go to checkout.
+
 ```mermaid
 ---
 title: "C2 – Shopping Cart"
