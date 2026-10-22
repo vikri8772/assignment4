@@ -1,58 +1,96 @@
 ```mermaid
 classDiagram
-    class Question {
-        -questionId: String
-        -orderId: String
-        -askedBy: String
-        -text: String
-        -askedAt: DateTime
-        -status: QuestionStatus
-        +getId() String
-        +getText() String
-        +getAskedAt() DateTime
-        +getStatus() QuestionStatus
-        +getAnswer() Answer
-        +isAnswered() Boolean
-        +answer(String text, User admin)
+    direction TB
+
+    class User {
+        +String userId
+        +String name
+        +String email
+        +String passwordHash
+        +Role role
+        +isAdmin() Boolean
     }
 
-    class Answer {
-        -text: String
-        -answeredBy: String
-        -answeredAt: DateTime
-        +getText() String
-        +getAnsweredBy() String
-        +getAnsweredAt() DateTime
-    }
-
-    class QuestionStatus {
-        <<enumeration>>
-        OPEN
-        ANSWERED
-    }
-
-    class QuestionRepository {
-        +getById(String id) Question
-        +getByOrder(String orderId) List~Question~
-        +getOpen() List~Question~
-        +getAll() List~Question~
-        +add(Question question)
-        +update(Question question)
-    }
-
-    class Order
-    class User
     class Role {
         <<enumeration>>
         CUSTOMER
         ADMIN
     }
 
+    class OrderStatus {
+        <<enumeration>>
+        SUBMITTED
+        APPROVED
+        IN_PREPARATION
+        DELIVERED
+        REJECTED
+        CANCELLED
+    }
+
+    class PaymentStatus {
+        <<enumeration>>
+        NOT_PAID
+        DEPOSIT_PAID
+        INVOICED
+        PAID
+    }
+
+    class Order {
+        +String orderId
+        +Date eventDate
+        +int numberOfGuests
+        +String deliveryAddress
+        +DateTime createdAt
+        +OrderStatus orderStatus
+        +PaymentStatus paymentStatus
+        +belongsTo(String userId) Boolean
+        +total() Decimal
+        +allowedNextStatuses() List~OrderStatus~
+        +changeStatus(OrderStatus newStatus)
+        +changePaymentStatus(PaymentStatus newStatus)
+    }
+
+    class GuestGroup {
+        +String groupName
+        +int numberOfGuests
+        +String allergyNotes
+        +String dietaryNotes
+    }
+
+    class OrderLine {
+        +String foodItemId
+        +String itemName
+        +int quantity
+        +Decimal unitPrice
+        +subtotal() Decimal
+    }
+
+    class UserRepository {
+        +getById(String id) User
+        +getByEmail(String email) User
+        +add(User user)
+    }
+
+    class OrderRepository {
+        +getById(String id) Order
+        +getByUser(String userId) List~Order~
+        +find(OrderStatus status, Date from, Date to) List~Order~
+        +add(Order order)
+        +update(Order order)
+    }
+
+    class FoodItem
+    class Event
+
     User --> Role : has
-    User "1" -- "0..*" Question : asks (CUSTOMER)
-    User "1" -- "0..*" Answer : writes (ADMIN)
-    Order "1" -- "0..*" Question : is about
-    Question "1" *-- "0..1" Answer : has
-    Question --> QuestionStatus : has
-    QuestionRepository ..> Question : stores
+    User "1" -- "0..*" Order : places
+    Order "1" *-- "1..*" GuestGroup : includes
+    Order "1" *-- "1..*" OrderLine : contains
+    Order --> OrderStatus : has
+    Order --> PaymentStatus : has
+    Order "*" --> "1" Event : is for
+    OrderLine "*" --> "1" FoodItem : refers to
+    UserRepository ..> User : stores
+    OrderRepository ..> Order : stores
+
 ```
