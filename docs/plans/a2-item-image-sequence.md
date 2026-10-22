@@ -33,7 +33,7 @@ sequenceDiagram
         FoodItemRepository-->>AdminController: FoodItem
         AdminController->>Uploads: save file with generated unique name
         Uploads-->>AdminController: path
-        AdminController->>FoodItem: setPicturePath(path)
+        AdminController->>FoodItem: set picturePath = path
         AdminController->>FoodItemRepository: update(item)
         FoodItemRepository-->>AdminController: Saved
         AdminController-->>Admin: Show item list with new image

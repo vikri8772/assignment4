@@ -3,7 +3,7 @@
 The shared foundation every feature builds on: the Flask app, the database, all domain classes and repositories, login, and the base layout. Features (C1–C5, A1–A4) are **not** part of this plan. Each one is built later on its own branch, following the same pattern.
 
 ## Decisions
-- **Python naming.** The class diagrams use Java-style getters (`getName()`). In the code we use plain attributes (`item.name`) and snake_case methods for behaviour (`accepts_quantity()`, `is_admin()`, `belongs_to()`, `allowed_next_statuses()`).
+- **Python naming.** The class diagrams list public attributes (no getters or setters) in camelCase. In the code we use the same attributes in snake_case (`item.min_order`) and snake_case methods for behaviour (`accepts_quantity()`, `is_admin()`, `belongs_to()`, `allowed_next_statuses()`).
 - **IDs** are `uuid4().hex` strings, as in the diagrams, so they carry over unchanged to Neo4j.
 - **Prices** are `Decimal` in Python and stored as TEXT in SQLite, so no rounding errors.
 - **Repositories** take a database connection. Only code in `app/models/` imports `sqlite3`.

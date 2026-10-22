@@ -28,7 +28,7 @@ sequenceDiagram
     alt input valid
         AdminController->>FoodItemRepository: getById(id)
         FoodItemRepository-->>AdminController: FoodItem
-        AdminController->>FoodItem: setName(), setPrice(), setMinOrder() ...
+        AdminController->>FoodItem: update name, price, minOrder ...
         AdminController->>FoodItemRepository: update(item)
         FoodItemRepository-->>AdminController: Saved
         AdminController-->>Admin: Show food item list with changes
