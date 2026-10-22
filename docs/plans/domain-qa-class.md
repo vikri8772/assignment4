@@ -5,28 +5,20 @@ The domain classes for customer questions (C5) and admin answers (A4). `User`, `
 ```mermaid
 classDiagram
     class Question {
-        -questionId: String
-        -orderId: String
-        -askedBy: String
-        -text: String
-        -askedAt: DateTime
-        -status: QuestionStatus
-        +getId() String
-        +getText() String
-        +getAskedAt() DateTime
-        +getStatus() QuestionStatus
-        +getAnswer() Answer
+        +questionId: String
+        +orderId: String
+        +askedBy: String
+        +text: String
+        +askedAt: DateTime
+        +status: QuestionStatus
         +isAnswered() Boolean
         +answer(String text, User admin)
     }
 
     class Answer {
-        -text: String
-        -answeredBy: String
-        -answeredAt: DateTime
-        +getText() String
-        +getAnsweredBy() String
-        +getAnsweredAt() DateTime
+        +text: String
+        +answeredBy: String
+        +answeredAt: DateTime
     }
 
     class QuestionStatus {
