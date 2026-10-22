@@ -36,6 +36,10 @@ The domain classes for food items, events, diets and the `FoodItemRepository`.
         +update(FoodItem item)
         +delete(String id)
         +isUsedInOrders(String id) Boolean
+        +getEvents() List~Event~
+        +addEvent(Event event)
+        +getDiets() List~Diet~
+        +addDiet(Diet diet)
     }
 
     FoodItem "*" -- "*" Event : belongs to
