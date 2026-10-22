@@ -78,7 +78,7 @@ flowchart LR
     AdminController --> OrderModel
     AdminController --> QAModel
 
-    FoodItemRepository --> Storage[(SQLite)]
+    FoodItemRepository --> Storage[(Database)]
     UserRepository --> Storage
     OrderRepository --> Storage
     QuestionRepository --> Storage
