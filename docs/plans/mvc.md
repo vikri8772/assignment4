@@ -36,7 +36,6 @@ flowchart LR
             admQuestionForm[question_form.html]
         end
         subgraph Static [static]
-            previewJS[js/image_preview.js]
             uploads[uploads/]
         end
     end
@@ -67,7 +66,6 @@ flowchart LR
     ShopController --> ShopViews
     AccountController --> AccountViews
     AdminController --> AdminViews
-    admItemForm --> previewJS
     AdminController --> uploads
 
     ShopController --> FoodModel
