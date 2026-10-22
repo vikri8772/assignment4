@@ -1,13 +1,13 @@
-from flask import Flask, render_template
+from flask import Flask
 
 
 def create_app():
     app = Flask(__name__)
 
-    # Temporary route to check that the app runs.
-    # It moves into the shop blueprint in step 2.
-    @app.route("/")
-    def home():
-        return render_template("base.html", company="Ekte Mat")
+    from app.controllers import account, admin, shop
+
+    app.register_blueprint(shop.bp)
+    app.register_blueprint(account.bp)
+    app.register_blueprint(admin.bp)
 
     return app

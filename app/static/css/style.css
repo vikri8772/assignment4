@@ -1,0 +1,27 @@
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  color: #1f2937;
+  background: #fafaf9;
+}
+
+header {
+  padding: 1rem;
+  background: #14532d;
+  color: white;
+}
+
+header h1 {
+  margin: 0 0 0.5rem;
+}
+
+nav a {
+  margin-right: 1rem;
+  color: white;
+}
+
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1rem;
+}

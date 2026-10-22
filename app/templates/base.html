@@ -3,10 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ company }} Online</title>
+  <title>{% block title %}Ekte Mat Online{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-  <h1>{{ company }} Online</h1>
-  <p>The app is running.</p>
+  <header>
+    <h1>Ekte Mat Online!</h1>
+    <nav>
+      <a href="{{ url_for('shop.menu') }}">Menu</a>
+      <a href="{{ url_for('account.login') }}">Log in</a>
+      <a href="{{ url_for('admin.items_overview') }}">Admin</a>
+    </nav>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
 </body>
 </html>
