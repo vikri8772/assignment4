@@ -46,6 +46,7 @@
         +add(FoodItem item)
         +update(FoodItem item)
         +delete(String id)
+        +isUsedInOrders(String id) Boolean
     }
 
     FoodItem "*" -- "*" Event : belongs to

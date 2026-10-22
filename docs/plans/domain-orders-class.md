@@ -18,31 +18,36 @@ classDiagram
     }
 
     class OrderStatus {
-            <<enumeration>>
-            SUBMITTED
-            APPROVED
-            IN_PREPARATION
-            DELIVERED
-            REJECTED
-            CANCELLED
-        }
-    
+        <<enumeration>>
+        SUBMITTED
+        APPROVED
+        IN_PREPARATION
+        DELIVERED
+        REJECTED
+        CANCELLED
+    }
+
     class PaymentStatus {
-            <<enumeration>>
-            NOT_PAID
-            DEPOSIT_PAID
-            INVOICED
-            PAID
-        }
+        <<enumeration>>
+        NOT_PAID
+        DEPOSIT_PAID
+        INVOICED
+        PAID
+    }
 
     class Order {
         +String orderId
         +Date eventDate
         +int numberOfGuests
         +String deliveryAddress
+        +DateTime createdAt
         +OrderStatus orderStatus
         +PaymentStatus paymentStatus
         +belongsTo(String userId) Boolean
+        +total() Decimal
+        +allowedNextStatuses() List~OrderStatus~
+        +changeStatus(OrderStatus newStatus)
+        +changePaymentStatus(PaymentStatus newStatus)
     }
 
     class GuestGroup {
@@ -57,9 +62,25 @@ classDiagram
         +String itemName
         +int quantity
         +Decimal unitPrice
+        +subtotal() Decimal
+    }
+
+    class UserRepository {
+        +getById(String id) User
+        +getByEmail(String email) User
+        +add(User user)
+    }
+
+    class OrderRepository {
+        +getById(String id) Order
+        +getByUser(String userId) List~Order~
+        +find(OrderStatus status, Date from, Date to) List~Order~
+        +add(Order order)
+        +update(Order order)
     }
 
     class FoodItem
+    class Event
 
     User --> Role : has
     User "1" -- "0..*" Order : places
@@ -67,6 +88,9 @@ classDiagram
     Order "1" *-- "1..*" OrderLine : contains
     Order --> OrderStatus : has
     Order --> PaymentStatus : has
+    Order "*" --> "1" Event : is for
     OrderLine "*" --> "1" FoodItem : refers to
+    UserRepository ..> User : stores
+    OrderRepository ..> Order : stores
 
 ```
