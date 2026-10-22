@@ -4,6 +4,8 @@
 classDiagram
     class Question {
         -questionId: String
+        -orderId: String
+        -askedBy: String
         -text: String
         -askedAt: DateTime
         -status: QuestionStatus
@@ -13,13 +15,15 @@ classDiagram
         +getStatus() QuestionStatus
         +getAnswer() Answer
         +isAnswered() Boolean
-        +answer(String text, Administrator admin)
+        +answer(String text, User admin)
     }
 
     class Answer {
         -text: String
+        -answeredBy: String
         -answeredAt: DateTime
         +getText() String
+        +getAnsweredBy() String
         +getAnsweredAt() DateTime
     }
 
@@ -39,15 +43,18 @@ classDiagram
     }
 
     class Order
-    class Customer
-    class Administrator
+    class User
+    class Role {
+        <<enumeration>>
+        CUSTOMER
+        ADMIN
+    }
 
-    Customer "1" -- "0..*" Question : asks
+    User --> Role : has
+    User "1" -- "0..*" Question : asks (CUSTOMER)
+    User "1" -- "0..*" Answer : writes (ADMIN)
     Order "1" -- "0..*" Question : is about
     Question "1" *-- "0..1" Answer : has
-    Administrator "1" -- "0..*" Answer : writes
     Question --> QuestionStatus : has
     QuestionRepository ..> Question : stores
-
-    note for Question "A question always belongs to one order.\nCustomers can only ask about their own orders."
 ```
