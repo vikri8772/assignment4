@@ -4,6 +4,10 @@ Mermaid diagrams for Ekte Mat Online. Read the ones for a feature before you cha
 
 File names follow `<feature>-<topic>-<type>.md`, for example `c3-checkout-sequence.md`.
 
+## Plans
+
+- [skeleton-plan.md](skeleton-plan.md) – the code skeleton (app, database, domain classes, login)
+
 ## Overview
 
 | Diagram | What it shows |
