@@ -17,8 +17,15 @@ The shared foundation every feature builds on: the Flask app, the database, all 
 4. Database: `schema.sql`, `db.py`, a test fixture with a temporary database.
 5. First repository: `FoodItemRepository`.
 6. Users and login: `User`, `UserRepository`, `login_required`, `admin_required`, the login and register pages.
-7. Orders and questions: domain classes with the status state machines, plus their repositories.
-8. `seed.py` with synthetic data, `.env.example`, and run instructions in the README.
+7. `seed.py` with synthetic events, diets, food items and users, `.env.example`, and run instructions in the README.
+
+## Left for the feature owners
+The skeleton covers what A1, A2 and C1 need, plus login, which every feature needs. The rest of the model is built together with the features that use it:
+- **Orders** (`Order`, `OrderLine`, `GuestGroup`, the status state machines, `OrderRepository`) belong with C3, C4 and A3. All three need `Order`, so agree on who builds it first.
+- **Questions** (`Question`, `Answer`, `QuestionRepository`) belong with C5 and A4.
+- `FoodItemRepository.is_used_in_orders()` (needed for deleting items in A1) is added once the order tables exist.
+
+Follow the same pattern: domain class and tests in `app/models/`, tables in `schema.sql`, a repository class, and seed data in `seed.py`.
 
 ## Verification
 - `pytest` passes after every step from step 3 on.
