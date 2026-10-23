@@ -25,3 +25,30 @@ main {
   margin: 0 auto;
   padding: 1rem;
 }
+
+nav form.inline {
+  display: inline;
+}
+
+nav span {
+  margin-right: 1rem;
+}
+
+.flash {
+  padding: 0.5rem 0.75rem;
+  border-left: 4px solid #b45309;
+  background: #fef3c7;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 360px;
+}
+
+.form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}

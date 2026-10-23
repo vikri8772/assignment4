@@ -1,12 +1,21 @@
 -- Running this file deletes all data and creates empty tables.
--- Users, orders and questions get their tables in steps 6 and 7.
+-- Orders and questions get their tables when those features are built.
 
+DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS food_item_allergen;
 DROP TABLE IF EXISTS food_item_diet;
 DROP TABLE IF EXISTS food_item_event;
 DROP TABLE IF EXISTS food_item;
 DROP TABLE IF EXISTS diet;
 DROP TABLE IF EXISTS event;
+
+CREATE TABLE users (
+    id            TEXT PRIMARY KEY,
+    name          TEXT NOT NULL,
+    email         TEXT NOT NULL UNIQUE,  -- two users can't share an e-mail address
+    password_hash TEXT NOT NULL,
+    role          TEXT NOT NULL  -- 'CUSTOMER' or 'ADMIN'
+);
 
 CREATE TABLE event (
     name TEXT PRIMARY KEY

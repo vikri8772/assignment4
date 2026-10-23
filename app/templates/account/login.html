@@ -4,5 +4,11 @@
 
 {% block content %}
   <h2>Log in</h2>
-  <p>The login form comes here (step 6).</p>
+  {# No action attribute: the form posts back to this URL, so ?next=... is kept. #}
+  <form method="post" class="form">
+    <label>E-mail <input type="email" name="email" value="{{ email or '' }}" required autofocus></label>
+    <label>Password <input type="password" name="password" required></label>
+    <button type="submit">Log in</button>
+  </form>
+  <p>No account yet? <a href="{{ url_for('account.register', next=request.args.get('next')) }}">Register</a></p>
 {% endblock %}
