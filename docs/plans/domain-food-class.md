@@ -1,28 +1,19 @@
+# Food items – class diagram
+
+The domain classes for food items, events, diets and the `FoodItemRepository`.
+
 ```mermaid
    classDiagram
     class FoodItem {
-        -id: String
-        -name: String
-        -desc: String
-        -price: Decimal
-        -minOrder: Int
-        -allergens: List~String~
-        -picturePath: String
-        -published: Boolean
-        +getId() String
-        +getName() String
-        +getDesc() String
-        +getPrice() Decimal
-        +getMinOrder() Int
+        +id: String
+        +name: String
+        +desc: String
+        +price: Decimal
+        +minOrder: Int
+        +allergens: List~String~
+        +picturePath: String
+        +published: Boolean
         +acceptsQuantity(Int qty) Boolean
-        +getAllergens() List~String~
-        +getPicturePath() String
-        +isPublished() Boolean
-        +setName(String name)
-        +setDesc(String desc)
-        +setPrice(Decimal price)
-        +setMinOrder(Int qty)
-        +setPicturePath(String path)
         +addAllergen(String allergen)
         +removeAllergen(String allergen)
         +publish()
@@ -30,13 +21,11 @@
     }
 
     class Event {
-        -name: String
-        +getName() String
+        +name: String
     }
 
     class Diet {
-        -name: String
-        +getName() String
+        +name: String
     }
 
     class FoodItemRepository {
@@ -47,6 +36,10 @@
         +update(FoodItem item)
         +delete(String id)
         +isUsedInOrders(String id) Boolean
+        +getEvents() List~Event~
+        +addEvent(Event event)
+        +getDiets() List~Diet~
+        +addDiet(Diet diet)
     }
 
     FoodItem "*" -- "*" Event : belongs to

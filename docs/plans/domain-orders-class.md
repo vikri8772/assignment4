@@ -1,3 +1,7 @@
+# Users and orders – class diagram
+
+The domain classes for users (one `User` class with a `Role`), orders, guest groups, order lines and their repositories.
+
 ```mermaid
 classDiagram
     direction TB

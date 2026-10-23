@@ -1,3 +1,7 @@
+# C5 Questions about an order – sequence diagram
+
+How a customer sees the questions and answers on their own order and asks a new question.
+
 ```mermaid
 sequenceDiagram
     actor Customer

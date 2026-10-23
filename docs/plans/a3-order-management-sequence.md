@@ -1,3 +1,7 @@
+# A3 Order management – sequence diagram
+
+How an admin lists and filters orders, opens one, and changes its order status and payment status.
+
 ````mermaid
 sequenceDiagram
     actor Admin

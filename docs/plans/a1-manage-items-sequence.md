@@ -1,3 +1,7 @@
+# A1 Manage food items – sequence diagram
+
+How an admin creates, publishes/unpublishes and deletes food items. Editing an item is in `a1-edit-item-sequence.md`.
+
 ````mermaid
 sequenceDiagram
     actor Admin

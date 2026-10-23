@@ -1,0 +1,22 @@
+# Virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Local data and secrets
+*.db
+instance/
+.env
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Uploaded images (keep the folder itself)
+app/static/uploads/*
+!app/static/uploads/.gitkeep

@@ -1,3 +1,7 @@
+# C4 My orders – sequence diagram
+
+How a logged-in customer sees their own orders and opens one. Customers can only see orders that belong to them.
+
 ````mermaid
 sequenceDiagram
     actor Customer

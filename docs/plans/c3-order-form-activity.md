@@ -1,4 +1,6 @@
-# C4 Order – activity diagram
+# C3 Order form – activity diagram
+
+The steps a customer goes through to fill in and submit the order form, with notes per guest group. The technical flow is in `c3-checkout-sequence.md`.
 
 ```mermaid
 flowchart TD

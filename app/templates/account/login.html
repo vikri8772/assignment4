@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Log in – Ekte Mat Online{% endblock %}
+
+{% block content %}
+  <h2>Log in</h2>
+  {# No action attribute: the form posts back to this URL, so ?next=... is kept. #}
+  <form method="post" class="form">
+    <label>E-mail <input type="email" name="email" value="{{ email or '' }}" required autofocus></label>
+    <label>Password <input type="password" name="password" required></label>
+    <button type="submit">Log in</button>
+  </form>
+  <p>No account yet? <a href="{{ url_for('account.register', next=request.args.get('next')) }}">Register</a></p>
+{% endblock %}

@@ -1,3 +1,7 @@
+# C3 Login and checkout – sequence diagram
+
+How the customer logs in at checkout and submits the order. The customer's steps are in `c3-order-form-activity.md`.
+
 ```mermaid
 ---
 title: "C3 – Login and Order"
