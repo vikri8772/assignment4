@@ -7,7 +7,7 @@ The shared foundation every feature builds on: the Flask app, the database, all 
 - **IDs** are `uuid4().hex` strings, as in the diagrams, so they carry over unchanged to Neo4j.
 - **Prices** are `Decimal` in Python and stored as TEXT in SQLite, so no rounding errors.
 - **Repositories** take a database connection. Only code in `app/models/` imports `sqlite3`.
-- **Secrets.** `SECRET_KEY` is read from `.env` with `python-dotenv`. `.env.example` is committed; `.env` never is.
+- **Secrets.** `SECRET_KEY` is read from an environment variable. Without it, a random key is made at startup (everyone is logged out on restart), which is fine for development. Whoever first needs a real secret, such as a Claude API key for A2, adds `python-dotenv` and a `.env.example`; `.env` itself is never committed.
 - **Passwords** are hashed with `werkzeug.security`. Login keeps the session so the cart survives (C3), and logout clears it.
 
 ## Steps
@@ -17,7 +17,7 @@ The shared foundation every feature builds on: the Flask app, the database, all 
 4. Database: `schema.sql`, `db.py`, a test fixture with a temporary database.
 5. First repository: `FoodItemRepository`.
 6. Users and login: `User`, `UserRepository`, `login_required`, `admin_required`, the login and register pages.
-7. `seed.py` with synthetic events, diets, food items and users, `.env.example`, and run instructions in the README.
+7. `seed.py` with synthetic events, diets, food items and users, and run instructions in the README and CLAUDE.md.
 
 ## Left for the feature owners
 The skeleton covers what A1, A2 and C1 need, plus login, which every feature needs. The rest of the model is built together with the features that use it:

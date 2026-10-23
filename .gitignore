@@ -16,3 +16,7 @@ instance/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Uploaded images (keep the folder itself)
+app/static/uploads/*
+!app/static/uploads/.gitkeep

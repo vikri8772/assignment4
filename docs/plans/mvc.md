@@ -24,6 +24,7 @@ flowchart LR
         end
         subgraph AccountViews [templates/account]
             accLogin[login.html]
+            accRegister[register.html]
             accOrders[orders.html]
             accOrderDetail["order_detail.html<br/>(with questions)"]
         end

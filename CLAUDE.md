@@ -17,6 +17,19 @@ Flask backend with Jinja2 templates. The layers must stay visible in the folder 
 
 - Controllers call repositories and domain classes. They never access storage directly.
 - Storage is SQLite for now. Neo4j will replace it in assignment 5, so keep all storage code behind the repository classes (`FoodItemRepository`, `OrderRepository`, ...).
+- Tables are in `app/models/schema.sql`. Repositories get their connection from `get_db()` in `app/models/db.py`.
+- Protect routes with `@login_required` or `@admin_required` from `app/controllers/auth.py`. The logged-in user is `g.user`.
+- How to add a feature (domain class, table, repository, seed data, tests): `docs/plans/skeleton-plan.md`.
+
+## Run and test
+Activate `.venv` first. Full setup steps are in `README.md`.
+
+    pip install -r requirements.txt
+    python seed.py                  # wipes the database and loads synthetic test data
+    flask --app app run --debug     # http://127.0.0.1:5000
+    pytest
+
+Test logins are listed in `seed.py` and `README.md`.
 
 ## Team rules
 - Work on your own branch and merge into `main` through a pull request.
