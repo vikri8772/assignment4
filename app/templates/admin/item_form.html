@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}{{ "Edit " ~ item.name if item else "New food item" }} – Ekte Mat Online{% endblock %}
+
+{% block content %}
+  <h2>{{ "Edit " ~ item.name if item else "New food item" }}</h2>
+  <p><a href="{{ url_for('admin.items_overview') }}">Back to food items</a></p>
+
+  {# The same form is used to create and to edit. It posts back to the page it is on. #}
+  <form method="post" class="form item-form">
+    <label>
+      Name
+      <input type="text" name="name" value="{{ values.name }}">
+    </label>
+    <label>
+      Description
+      <textarea name="desc" rows="3">{{ values.desc }}</textarea>
+    </label>
+    <label>
+      Price (NOK)
+      <input type="text" name="price" inputmode="decimal" placeholder="129.00" value="{{ values.price }}">
+    </label>
+    <label>
+      Minimum order
+      <input type="number" name="min_order" min="1" value="{{ values.min_order }}">
+    </label>
+
+    <fieldset class="checklist">
+      <legend>Events (at least one)</legend>
+      {% for event in events %}
+        <label>
+          <input type="checkbox" name="events" value="{{ event.name }}" {{ "checked" if event.name in values.events }}>
+          {{ event.name }}
+        </label>
+      {% endfor %}
+    </fieldset>
+
+    <fieldset class="checklist">
+      <legend>Dietary labels</legend>
+      {% for diet in diets %}
+        <label>
+          <input type="checkbox" name="diets" value="{{ diet.name }}" {{ "checked" if diet.name in values.diets }}>
+          {{ diet.name }}
+        </label>
+      {% endfor %}
+    </fieldset>
+
+    <fieldset class="checklist">
+      <legend>Allergens</legend>
+      {% for allergen in allergens %}
+        <label>
+          <input type="checkbox" name="allergens" value="{{ allergen }}" {{ "checked" if allergen in values.allergens }}>
+          {{ allergen }}
+        </label>
+      {% endfor %}
+    </fieldset>
+
+    {# Step 4 (A2) adds the picture upload here. #}
+
+    <button type="submit">Save</button>
+  </form>
+{% endblock %}
