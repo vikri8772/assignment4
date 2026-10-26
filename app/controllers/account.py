@@ -75,6 +75,9 @@ def logout():
 @bp.route("/orders")
 @login_required
 def my_orders():
+    # Admins don't order food themselves, so they are sent to the list of all orders (A3).
+    if g.user.is_admin():
+        return redirect(url_for("admin.orders"))
     orders = OrderRepository(get_db()).get_by_user(g.user.id)
     return render_template("account/orders.html", orders=orders)
 

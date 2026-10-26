@@ -15,8 +15,10 @@
         {% if g.user.is_admin() %}
           <a href="{{ url_for('admin.items_overview') }}">Admin</a>
           <a href="{{ url_for('admin.orders') }}">Orders</a>
+        {% else %}
+          {# Only customers order food, so admins don't get "My orders". #}
+          <a href="{{ url_for('account.my_orders') }}">My orders</a>
         {% endif %}
-        <a href="{{ url_for('account.my_orders') }}">My orders</a>
         <span>Logged in as {{ g.user.name }}</span>
         <form action="{{ url_for('account.logout') }}" method="post" class="inline">
           <button type="submit">Log out</button>
