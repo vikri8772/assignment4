@@ -438,3 +438,17 @@ def test_list_has_delete_button_with_confirm(client, db, food, stew):
 
     assert f'action="/admin/items/{stew.id}/delete"' in page
     assert 'data-name="Hjortegryte"' in page
+
+
+def test_seed_photo_is_never_deleted(app, client, db, food, stew):
+    # Seed photos in static/img/food/ are committed. Only files in uploads/ may be removed.
+    stew.picture_path = "img/food/hjortegryte.jpg"
+    food.update(stew)
+    photo = os.path.join(app.static_folder, stew.picture_path)
+    log_in_as(client, db, Role.ADMIN)
+
+    client.post(f"/admin/items/{stew.id}/edit", data=VALID_FORM | {"picture": picture(PNG)})
+    client.post(f"/admin/items/{stew.id}/delete")
+
+    assert food.get_by_id(stew.id) is None
+    assert os.path.isfile(photo)

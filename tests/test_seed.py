@@ -1,3 +1,5 @@
+import os
+
 from seed import DIETS, FOOD_ITEMS, ORDERS, USERS, seed
 
 from app.models.food import ALLERGENS
@@ -33,3 +35,10 @@ def test_seed_creates_orders_for_the_customers(app, db):
 def test_seed_allergens_are_on_the_allergen_list():
     for item in FOOD_ITEMS:
         assert set(item.allergens) <= set(ALLERGENS), item.name
+
+
+def test_seed_pictures_exist(app):
+    # The seed pictures are committed, so the menu has photos right after "python seed.py".
+    for item in FOOD_ITEMS:
+        assert item.picture_path, item.name
+        assert os.path.isfile(os.path.join(app.static_folder, item.picture_path)), item.picture_path

@@ -41,6 +41,8 @@ python seed.py
 
 To start over with an empty database instead, run `flask --app app init-db`.
 
+The seeded food items get their pictures from `app/static/img/food/`. These food photos are taken from recipe websites for illustration in this student project and are not ours. Pictures that admins upload are saved in `app/static/uploads/`, which is not committed.
+
 ## Run
 
 ```bash

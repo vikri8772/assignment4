@@ -34,9 +34,11 @@ LACTOSE_FREE = Diet("Lactose-free")
 HALAL = Diet("Halal")  # often asked for in the order export (data pack)
 DIETS = [VEGETARIAN, VEGAN, GLUTEN_FREE, LACTOSE_FREE, HALAL]
 
+# Pictures are in app/static/img/food/ and are committed, unlike uploads/.
 FOOD_ITEMS = [
     FoodItem(
         name="Bergensk fiskesuppe",
+        picture_path="img/food/fiskesuppe.jpg",
         desc="Creamy fish soup with salmon, cod and root vegetables.",
         price=Decimal("129.00"),
         min_order=10,
@@ -47,6 +49,7 @@ FOOD_ITEMS = [
     ),
     FoodItem(
         name="Rekesmørbrød",
+        picture_path="img/food/rekesmorbrod.jpg",
         desc="Open sandwich with hand-peeled prawns, egg and mayonnaise.",
         price=Decimal("89.00"),
         min_order=20,
@@ -56,6 +59,7 @@ FOOD_ITEMS = [
     ),
     FoodItem(
         name="Pinnekjøtt",
+        picture_path="img/food/pinnekjott.jpg",
         desc="Salted and dried lamb ribs with mashed swede and potatoes.",
         price=Decimal("349.00"),
         min_order=15,
@@ -66,6 +70,7 @@ FOOD_ITEMS = [
     ),
     FoodItem(
         name="Ribbe",
+        picture_path="img/food/ribbe.jpg",
         desc="Crispy pork belly with sauerkraut, sausages and gravy.",
         price=Decimal("329.00"),
         min_order=15,
@@ -75,6 +80,7 @@ FOOD_ITEMS = [
     ),
     FoodItem(
         name="Bløtkake",
+        picture_path="img/food/blotkake.jpg",
         desc="Layered sponge cake with cream and fresh strawberries. Serves 12.",
         price=Decimal("590.00"),
         min_order=1,
@@ -85,6 +91,7 @@ FOOD_ITEMS = [
     ),
     FoodItem(
         name="Vegetarlasagne",
+        picture_path="img/food/vegetarlasagne.jpg",
         desc="Lasagne with roasted vegetables, lentils and tomato sauce.",
         price=Decimal("159.00"),
         min_order=10,
@@ -95,6 +102,7 @@ FOOD_ITEMS = [
     ),
     FoodItem(
         name="Grønnsakswrap",
+        picture_path="img/food/gronnsakswrap.jpg",
         desc="Wrap with hummus, falafel and crunchy vegetables.",
         price=Decimal("79.00"),
         min_order=20,
@@ -105,6 +113,7 @@ FOOD_ITEMS = [
     ),
     FoodItem(
         name="Hjortegryte",
+        picture_path="img/food/hjortegryte.jpg",
         desc="Venison stew with mushrooms and lingonberries. Not on the menu yet.",
         price=Decimal("289.00"),
         min_order=10,
