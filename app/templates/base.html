@@ -13,7 +13,7 @@
       <a href="{{ url_for('shop.menu') }}">Menu</a>
       {% if g.user %}
         {% if g.user.is_admin() %}
-          <a href="{{ url_for('admin.items_overview') }}">Admin</a>
+          <a href="{{ url_for('admin.items_overview') }}">Food items</a>
           <a href="{{ url_for('admin.orders') }}">Orders</a>
         {% endif %}
         <a href="{{ url_for('account.my_orders') }}">My orders</a>
