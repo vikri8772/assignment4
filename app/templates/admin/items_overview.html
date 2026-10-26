@@ -4,5 +4,52 @@
 
 {% block content %}
   <h2>Food items</h2>
-  <p>The list of food items comes here (A1).</p>
+  {# Step 3 adds a "New item" link here and an Edit link per row. #}
+
+  {% if not items %}
+    <p>There are no food items yet.</p>
+  {% else %}
+    <div class="table-scroll">
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Price</th>
+          <th>Minimum order</th>
+          <th>Events</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+          <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.price }} NOK</td>
+            <td>{{ item.min_order }}</td>
+            <td>{{ item.events | map(attribute="name") | join(", ") }}</td>
+            <td>
+              {% if item.published %}
+                <span class="status published">Published</span>
+              {% else %}
+                <span class="status unpublished">Not published</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if item.published %}
+                <form action="{{ url_for('admin.unpublish_item', item_id=item.id) }}" method="post">
+                  <button type="submit">Unpublish</button>
+                </form>
+              {% else %}
+                <form action="{{ url_for('admin.publish_item', item_id=item.id) }}" method="post">
+                  <button type="submit">Publish</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  {% endif %}
 {% endblock %}

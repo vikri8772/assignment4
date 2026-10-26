@@ -114,3 +114,44 @@ nav span {
   color: #14532d;
   font-size: 0.85rem;
 }
+
+/* A1 Food items (admin) */
+
+.table-scroll {
+  overflow-x: auto;  /* on narrow screens only the table scrolls, not the whole page */
+}
+
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.items-table th,
+.items-table td {
+  padding: 0.5rem;
+  border-bottom: 1px solid #e7e5e4;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.items-table form {
+  margin: 0;
+}
+
+.status {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.status.published {
+  background: #dcfce7;
+  color: #14532d;
+}
+
+.status.unpublished {
+  background: #e7e5e4;
+  color: #57534e;
+}
