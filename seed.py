@@ -48,7 +48,7 @@ FOOD_ITEMS = [
         price=Decimal("89.00"),
         min_order=20,
         events=[CONFIRMATION, CONFERENCE],
-        allergens=["shellfish", "egg", "gluten"],
+        allergens=["crustaceans", "egg", "gluten"],
         published=True,
     ),
     FoodItem(

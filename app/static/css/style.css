@@ -155,3 +155,28 @@ nav span {
   background: #e7e5e4;
   color: #57534e;
 }
+
+.item-form {
+  max-width: 560px;
+}
+
+.item-form input,
+.item-form textarea {
+  font: inherit;  /* text boxes use the page font, not the browser's default */
+}
+
+.checklist {
+  border: 1px solid #e7e5e4;
+  border-radius: 8px;
+}
+
+.form .checklist label {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  margin: 0 1rem 0.25rem 0;
+}
+
+.page-actions {
+  margin-bottom: 1rem;
+}

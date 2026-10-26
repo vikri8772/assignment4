@@ -1,5 +1,6 @@
 from seed import DIETS, FOOD_ITEMS, USERS, seed
 
+from app.models.food import ALLERGENS
 from app.models.food_item_repository import FoodItemRepository
 from app.models.user_repository import UserRepository
 
@@ -15,3 +16,8 @@ def test_seed_creates_items_events_and_users(app, db):
 
     admin_email = USERS[0][1]
     assert UserRepository(db).get_by_email(admin_email).is_admin()
+
+
+def test_seed_allergens_are_on_the_allergen_list():
+    for item in FOOD_ITEMS:
+        assert set(item.allergens) <= set(ALLERGENS), item.name

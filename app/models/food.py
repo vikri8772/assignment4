@@ -5,6 +5,25 @@ from uuid import uuid4
 # Largest quantity a customer can order of one item (C2).
 MAX_QUANTITY = 10_000
 
+# The 14 allergens that must be labelled on food in the EU/EEA.
+# The admin chooses from this list (A1), so every item uses the same words.
+ALLERGENS = [
+    "gluten",
+    "crustaceans",
+    "egg",
+    "fish",
+    "peanuts",
+    "soybeans",
+    "milk",
+    "nuts",
+    "celery",
+    "mustard",
+    "sesame",
+    "sulphites",
+    "lupin",
+    "molluscs",
+]
+
 
 @dataclass(frozen=True)
 class Event:
