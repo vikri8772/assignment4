@@ -1,7 +1,9 @@
-from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from flask import Blueprint, abort, flash, g, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from app.controllers.auth import login_required
 from app.models.db import get_db
+from app.models.order_repository import OrderRepository
 from app.models.user import User
 from app.models.user_repository import UserRepository
 
@@ -65,6 +67,26 @@ def register():
 def logout():
     session.clear()
     return redirect(url_for("shop.menu"))
+
+
+# C4 My orders. See docs/plans/c4-my-orders-sequence.md.
+
+
+@bp.route("/orders")
+@login_required
+def my_orders():
+    orders = OrderRepository(get_db()).get_by_user(g.user.id)
+    return render_template("account/orders.html", orders=orders)
+
+
+@bp.route("/orders/<order_id>")
+@login_required
+def my_order_detail(order_id):
+    order = OrderRepository(get_db()).get_by_id(order_id)
+    # Same 404 for a missing order and someone else's order, so nobody can find out which order IDs exist.
+    if order is None or not order.belongs_to(g.user.id):
+        abort(404)
+    return render_template("account/order_detail.html", order=order)
 
 
 def _safe_next_url():
