@@ -41,6 +41,8 @@ classDiagram
 
     class Order {
         +String orderId
+        +String userId
+        +Event event
         +Date eventDate
         +int numberOfGuests
         +String deliveryAddress
@@ -51,6 +53,7 @@ classDiagram
         +total() Decimal
         +allowedNextStatuses() List~OrderStatus~
         +changeStatus(OrderStatus newStatus)
+        +allowedNextPaymentStatuses() List~PaymentStatus~
         +changePaymentStatus(PaymentStatus newStatus)
     }
 

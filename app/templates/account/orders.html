@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}My orders – Ekte Mat Online{% endblock %}
+
+{% block content %}
+  <h2>My orders</h2>
+
+  {% if orders %}
+    <table class="orders">
+      <thead>
+        <tr>
+          <th>Event date</th>
+          <th>Event</th>
+          <th>Guests</th>
+          <th>Status</th>
+          <th>Payment</th>
+          <th class="number">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+          <tr>
+            <td><a href="{{ url_for('account.my_order_detail', order_id=order.id) }}">{{ order.event_date.isoformat() }}</a></td>
+            <td>{{ order.event.name }}</td>
+            <td>{{ order.number_of_guests }}</td>
+            <td><span class="badge status-{{ order.order_status.value|lower }}">{{ order.order_status.label }}</span></td>
+            <td><span class="badge payment-{{ order.payment_status.value|lower }}">{{ order.payment_status.label }}</span></td>
+            <td class="number">{{ '%.2f'|format(order.total()) }} kr</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>You have no orders yet. <a href="{{ url_for('shop.menu') }}">See the menu</a> to get started.</p>
+  {% endif %}
+{% endblock %}

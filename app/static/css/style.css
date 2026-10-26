@@ -180,3 +180,88 @@ nav span {
 .page-actions {
   margin-bottom: 1rem;
 }
+
+/* Order tables and status badges (A3, C4) */
+
+table.orders {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  background: white;
+}
+
+table.orders th,
+table.orders td {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+table.orders .number {
+  text-align: right;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  background: #e5e7eb;
+}
+
+.status-submitted { background: #dbeafe; }
+.status-approved { background: #dcfce7; }
+.status-in_preparation { background: #fef3c7; }
+.status-delivered { background: #14532d; color: white; }
+.status-rejected,
+.status-cancelled { background: #fee2e2; }
+
+.payment-not_paid { background: #fee2e2; }
+.payment-deposit_paid,
+.payment-invoiced { background: #fef3c7; }
+.payment-paid { background: #dcfce7; }
+
+.allergy {
+  font-weight: bold;
+  color: #b91c1c;
+}
+
+.order-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 1rem;
+}
+
+.order-facts dt {
+  font-weight: bold;
+}
+
+.status-panel {
+  padding: 0.5rem 1rem;
+  margin: 1rem 0;
+  background: white;
+  border: 1px solid #e5e7eb;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+button.danger {
+  color: #b91c1c;
+}

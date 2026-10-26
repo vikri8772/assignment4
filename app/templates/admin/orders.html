@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Orders – Ekte Mat Online{% endblock %}
+
+{% block content %}
+  <h2>Orders</h2>
+
+  <form method="get" action="{{ url_for('admin.orders') }}" class="filters">
+    <label>Status
+      <select name="status">
+        <option value="">All statuses</option>
+        {% for s in statuses %}
+          <option value="{{ s.value }}" {% if s == status %}selected{% endif %}>{{ s.label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Event date from
+      <input type="date" name="from" value="{{ from_date.isoformat() if from_date else '' }}">
+    </label>
+    <label>to
+      <input type="date" name="to" value="{{ to_date.isoformat() if to_date else '' }}">
+    </label>
+    <button type="submit">Filter</button>
+    <a href="{{ url_for('admin.orders') }}">Clear filters</a>
+  </form>
+
+  {% if orders %}
+    <table class="orders">
+      <thead>
+        <tr>
+          <th>Event date</th>
+          <th>Customer</th>
+          <th>Event</th>
+          <th>Guests</th>
+          <th>Status</th>
+          <th>Payment</th>
+          <th class="number">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+          <tr>
+            <td><a href="{{ url_for('admin.order_detail', order_id=order.id) }}">{{ order.event_date.isoformat() }}</a></td>
+            <td>{{ customers[order.user_id].name }}</td>
+            <td>{{ order.event.name }}</td>
+            <td>{{ order.number_of_guests }}</td>
+            <td><span class="badge status-{{ order.order_status.value|lower }}">{{ order.order_status.label }}</span></td>
+            <td><span class="badge payment-{{ order.payment_status.value|lower }}">{{ order.payment_status.label }}</span></td>
+            <td class="number">{{ '%.2f'|format(order.total()) }} kr</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p>{{ orders|length }} order{{ 's' if orders|length != 1 }}.</p>
+  {% else %}
+    <p>No orders match the filters.</p>
+  {% endif %}
+{% endblock %}
