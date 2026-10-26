@@ -6,8 +6,15 @@ from app.models.db import get_db, init_db
 
 @pytest.fixture
 def app(tmp_path):
-    # Each test gets its own empty database in a temporary folder.
-    app = create_app({"TESTING": True, "DATABASE": str(tmp_path / "test.db"), "SECRET_KEY": "test"})
+    # Each test gets its own empty database and upload folder in a temporary folder.
+    app = create_app(
+        {
+            "TESTING": True,
+            "DATABASE": str(tmp_path / "test.db"),
+            "UPLOAD_FOLDER": str(tmp_path / "uploads"),
+            "SECRET_KEY": "test",
+        }
+    )
     with app.app_context():
         init_db()
     return app
