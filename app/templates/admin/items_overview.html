@@ -13,6 +13,7 @@
     <table class="items-table">
       <thead>
         <tr>
+          <th>Picture</th>
           <th>Name</th>
           <th>Price</th>
           <th>Minimum order</th>
@@ -25,6 +26,13 @@
       <tbody>
         {% for item in items %}
           <tr>
+            <td>
+              {% if item.picture_path %}
+                <img class="thumbnail" src="{{ url_for('static', filename=item.picture_path) }}" alt="{{ item.name }}">
+              {% else %}
+                <span class="no-thumbnail">–</span>
+              {% endif %}
+            </td>
             <td>{{ item.name }}</td>
             <td>{{ item.price }} NOK</td>
             <td>{{ item.min_order }}</td>

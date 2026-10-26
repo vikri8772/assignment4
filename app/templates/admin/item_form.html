@@ -7,7 +7,8 @@
   <p><a href="{{ url_for('admin.items_overview') }}">Back to food items</a></p>
 
   {# The same form is used to create and to edit. It posts back to the page it is on. #}
-  <form method="post" class="form item-form">
+  {# multipart/form-data is needed to send a file with the form. #}
+  <form method="post" enctype="multipart/form-data" class="form item-form">
     <label>
       Name
       <input type="text" name="name" value="{{ values.name }}">
@@ -55,8 +56,30 @@
       {% endfor %}
     </fieldset>
 
-    {# Step 4 (A2) adds the picture upload here. #}
+    <fieldset class="picture-field">
+      <legend>Picture</legend>
+      <div class="picture-row">
+        <figure>
+          <figcaption>Current</figcaption>
+          {% if item and item.picture_path %}
+            <img src="{{ url_for('static', filename=item.picture_path) }}" alt="Current picture of {{ item.name }}">
+          {% else %}
+            <div class="no-picture">No picture yet</div>
+          {% endif %}
+        </figure>
+        <figure id="picture-new" hidden>
+          <figcaption>New (not saved yet)</figcaption>
+          <img id="picture-preview" alt="Preview of the new picture">
+        </figure>
+      </div>
+      <input type="file" id="picture" name="picture" accept="image/jpeg,image/png">
+      <button type="button" id="picture-remove" hidden>Remove</button>
+      <p id="picture-error" class="picture-error" role="alert"></p>
+      <p class="hint">JPG or PNG, at most 5 MB. Nothing is saved until you click Save.</p>
+    </fieldset>
 
     <button type="submit">Save</button>
   </form>
+
+  <script src="{{ url_for('static', filename='js/image_preview.js') }}"></script>
 {% endblock %}

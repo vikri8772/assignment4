@@ -11,12 +11,17 @@ def create_app(test_config=None):
         # Signs the login cookie. Set SECRET_KEY in .env; without it, a random
         # key is made at startup and everyone is logged out on every restart.
         SECRET_KEY=os.environ.get("SECRET_KEY") or secrets.token_hex(32),
+        # Food item pictures (A2). Tests use a temporary folder instead.
+        UPLOAD_FOLDER=os.path.join(app.static_folder, "uploads"),
+        # Largest request Flask accepts: a 5 MB picture plus the other form fields.
+        MAX_CONTENT_LENGTH=6 * 1024 * 1024,
     )
     if test_config is not None:
         app.config.update(test_config)
 
     # The instance/ folder holds the database file. It is in .gitignore.
     os.makedirs(app.instance_path, exist_ok=True)
+    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
     from app.models import db
 
