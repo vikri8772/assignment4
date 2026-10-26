@@ -1,6 +1,10 @@
 -- Running this file deletes all data and creates empty tables.
--- Orders and questions get their tables when those features are built.
+-- Questions get their tables when that feature is built.
 
+-- Order tables first, because they point to users, event and food_item.
+DROP TABLE IF EXISTS guest_group;
+DROP TABLE IF EXISTS order_line;
+DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS food_item_allergen;
 DROP TABLE IF EXISTS food_item_diet;
@@ -52,4 +56,39 @@ CREATE TABLE food_item_allergen (
     food_item_id TEXT NOT NULL REFERENCES food_item (id) ON DELETE CASCADE,
     allergen     TEXT NOT NULL,
     PRIMARY KEY (food_item_id, allergen)
+);
+
+-- "order" is an SQL keyword, so the table is called orders.
+CREATE TABLE orders (
+    id               TEXT PRIMARY KEY,
+    user_id          TEXT NOT NULL REFERENCES users (id),
+    event_name       TEXT NOT NULL REFERENCES event (name),
+    event_date       TEXT NOT NULL,  -- ISO date, e.g. '2027-05-15'
+    number_of_guests INTEGER NOT NULL,
+    delivery_address TEXT NOT NULL,
+    created_at       TEXT NOT NULL,  -- ISO date and time, e.g. '2026-10-25T14:30:00'
+    order_status     TEXT NOT NULL,  -- an OrderStatus, e.g. 'SUBMITTED'
+    payment_status   TEXT NOT NULL   -- a PaymentStatus, e.g. 'NOT_PAID'
+);
+
+CREATE TABLE order_line (
+    order_id     TEXT NOT NULL REFERENCES orders (id) ON DELETE CASCADE,
+    position     INTEGER NOT NULL,  -- keeps the lines in the order they were added
+    -- No ON DELETE CASCADE: a food item that is in an order can't be deleted.
+    food_item_id TEXT NOT NULL REFERENCES food_item (id),
+    item_name    TEXT NOT NULL,
+    quantity     INTEGER NOT NULL,
+    unit_price   TEXT NOT NULL,  -- Decimal stored as text
+    PRIMARY KEY (order_id, position)
+);
+
+-- Allergies and diets are stored per guest group, not per named guest (GDPR).
+CREATE TABLE guest_group (
+    order_id         TEXT NOT NULL REFERENCES orders (id) ON DELETE CASCADE,
+    position         INTEGER NOT NULL,
+    group_name       TEXT NOT NULL,
+    number_of_guests INTEGER NOT NULL,
+    allergy_notes    TEXT NOT NULL DEFAULT '',
+    dietary_notes    TEXT NOT NULL DEFAULT '',
+    PRIMARY KEY (order_id, position)
 );

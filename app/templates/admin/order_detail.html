@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{# Button text for each status change, from the arrows in the state diagrams. #}
+{% set order_actions = {
+  "APPROVED": "Approve order",
+  "REJECTED": "Reject order",
+  "IN_PREPARATION": "Start preparation",
+  "DELIVERED": "Mark as delivered",
+  "CANCELLED": "Cancel order",
+} %}
+{% set payment_actions = {
+  "DEPOSIT_PAID": "Deposit paid",
+  "INVOICED": "Invoice sent",
+  "PAID": "Invoice paid",
+} %}
+{# These can't be undone, so the admin is asked first. #}
+{% set final_statuses = ["REJECTED", "CANCELLED"] %}
+
+{% block title %}Order {{ order.event_date.isoformat() }} – Ekte Mat Online{% endblock %}
+
+{% block content %}
+  <p><a href="{{ url_for('admin.orders') }}">← All orders</a></p>
+  <h2>{{ order.event.name }}, {{ order.event_date.isoformat() }}</h2>
+
+  <dl class="order-facts">
+    <dt>Customer</dt><dd>{{ customer.name }} ({{ customer.email }})</dd>
+    <dt>Guests</dt><dd>{{ order.number_of_guests }}</dd>
+    <dt>Delivery address</dt><dd>{{ order.delivery_address }}</dd>
+    <dt>Ordered</dt><dd>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+  </dl>
+
+  <section class="status-panel">
+    <h3>Order status: <span class="badge status-{{ order.order_status.value|lower }}">{{ order.order_status.label }}</span></h3>
+    {% set next_statuses = order.allowed_next_statuses() %}
+    {% if next_statuses %}
+      <div class="actions">
+        {% for s in next_statuses %}
+          <form method="post" action="{{ url_for('admin.change_order_status', order_id=order.id) }}"
+                {% if s.value in final_statuses %}onsubmit="return confirm('{{ order_actions[s.value] }}? This can not be undone.')"{% endif %}>
+            <input type="hidden" name="status" value="{{ s.value }}">
+            <button type="submit" {% if s.value in final_statuses %}class="danger"{% endif %}>{{ order_actions[s.value] }}</button>
+          </form>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>This order is finished. The status can't be changed.</p>
+    {% endif %}
+
+    <h3>Payment status: <span class="badge payment-{{ order.payment_status.value|lower }}">{{ order.payment_status.label }}</span></h3>
+    {% set next_payments = order.allowed_next_payment_statuses() %}
+    {% if next_payments %}
+      <div class="actions">
+        {% for s in next_payments %}
+          <form method="post" action="{{ url_for('admin.change_payment_status', order_id=order.id) }}">
+            <input type="hidden" name="status" value="{{ s.value }}">
+            <button type="submit">{{ payment_actions[s.value] }}</button>
+          </form>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>Fully paid.</p>
+    {% endif %}
+  </section>
+
+  <h3>Food</h3>
+  <table class="orders">
+    <thead>
+      <tr><th>Item</th><th class="number">Quantity</th><th class="number">Unit price</th><th class="number">Subtotal</th></tr>
+    </thead>
+    <tbody>
+      {% for line in order.lines %}
+        <tr>
+          <td>{{ line.item_name }}</td>
+          <td class="number">{{ line.quantity }}</td>
+          <td class="number">{{ '%.2f'|format(line.unit_price) }} kr</td>
+          <td class="number">{{ '%.2f'|format(line.subtotal()) }} kr</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr><th colspan="3">Total</th><th class="number">{{ '%.2f'|format(order.total()) }} kr</th></tr>
+    </tfoot>
+  </table>
+
+  <h3>Guest groups</h3>
+  <table class="orders">
+    <thead>
+      <tr><th>Group</th><th class="number">Guests</th><th>Allergies</th><th>Diets</th></tr>
+    </thead>
+    <tbody>
+      {% for group in order.guest_groups %}
+        <tr>
+          <td>{{ group.group_name }}</td>
+          <td class="number">{{ group.number_of_guests }}</td>
+          <td>{% if group.allergy_notes %}<span class="allergy">{{ group.allergy_notes }}</span>{% else %}–{% endif %}</td>
+          <td>{{ group.dietary_notes or '–' }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
