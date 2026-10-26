@@ -315,3 +315,31 @@ table.orders .number {
 button.danger {
   color: #b91c1c;
 }
+
+/* C2 Cart */
+
+.add-to-cart,
+.cart-quantity {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.cart-quantity {
+  display: inline-flex;
+  margin-top: 0;
+}
+
+.add-to-cart input,
+.cart-quantity input {
+  width: 6rem;
+}
+
+.button {
+  display: inline-block;
+  padding: 0.4rem 0.9rem;
+  border-radius: 4px;
+  background: #14532d;
+  color: white;
+  text-decoration: none;
+}

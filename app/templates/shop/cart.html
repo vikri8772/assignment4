@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Cart – Ekte Mat Online{% endblock %}
+
+{% block content %}
+  <h2>Cart</h2>
+
+  {% if not rows %}
+    <p>Your cart is empty. <a href="{{ url_for('shop.menu') }}">Choose food from the menu.</a></p>
+  {% else %}
+    <div class="table-scroll">
+      <table class="orders">
+        <thead>
+          <tr><th>Item</th><th>Quantity</th><th class="number">Unit price</th><th class="number">Subtotal</th></tr>
+        </thead>
+        <tbody>
+          {% for line, item in rows %}
+            <tr>
+              <td>{{ line.item_name }}<br><span class="hint">Minimum {{ item.min_order }}</span></td>
+              <td>
+                {# Quantity 0 removes the item (C2). #}
+                <form action="{{ url_for('shop.update_cart') }}" method="post" class="cart-quantity">
+                  <input type="hidden" name="item_id" value="{{ line.food_item_id }}">
+                  <input type="number" name="quantity" value="{{ line.quantity }}" min="0" max="10000"
+                         aria-label="Quantity of {{ line.item_name }}">
+                  <button type="submit">Update</button>
+                </form>
+                <form action="{{ url_for('shop.update_cart') }}" method="post" class="cart-quantity">
+                  <input type="hidden" name="item_id" value="{{ line.food_item_id }}">
+                  <input type="hidden" name="quantity" value="0">
+                  <button type="submit">Remove</button>
+                </form>
+              </td>
+              <td class="number">{{ '%.2f'|format(line.unit_price) }} kr</td>
+              <td class="number">{{ '%.2f'|format(line.subtotal()) }} kr</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr><th colspan="3">Estimated total</th><th class="number">{{ '%.2f'|format(total) }} kr</th></tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="page-actions">
+      <a href="{{ url_for('shop.menu') }}">← Add more food</a>
+    </div>
+  {% endif %}
+{% endblock %}
