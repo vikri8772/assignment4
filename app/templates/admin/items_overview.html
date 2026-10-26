@@ -21,6 +21,7 @@
           <th>Status</th>
           <th></th>
           <th></th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -56,10 +57,27 @@
                 </form>
               {% endif %}
             </td>
+            <td>
+              <form action="{{ url_for('admin.delete_item', item_id=item.id) }}" method="post"
+                    class="confirm-delete" data-name="{{ item.name }}">
+                <button type="submit" class="danger">Delete</button>
+              </form>
+            </td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
     </div>
   {% endif %}
+
+  <script>
+    // Asks "are you sure?" before deleting, since a deleted item can't be brought back.
+    document.querySelectorAll("form.confirm-delete").forEach((form) => {
+      form.addEventListener("submit", (event) => {
+        if (!confirm(`Delete ${form.dataset.name}? This can't be undone.`)) {
+          event.preventDefault();
+        }
+      });
+    });
+  </script>
 {% endblock %}
