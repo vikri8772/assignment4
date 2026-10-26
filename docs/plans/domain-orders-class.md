@@ -1,6 +1,6 @@
 # Users and orders – class diagram
 
-The domain classes for users (one `User` class with a `Role`), orders, guest groups, order lines and their repositories.
+The domain classes for users (one `User` class with a `Role`), the cart, orders, guest groups, order lines and their repositories.
 
 ```mermaid
 classDiagram
@@ -51,6 +51,7 @@ classDiagram
         +PaymentStatus paymentStatus
         +belongsTo(String userId) Boolean
         +total() Decimal
+        +problems(Date today) List~String~
         +allowedNextStatuses() List~OrderStatus~
         +changeStatus(OrderStatus newStatus)
         +allowedNextPaymentStatuses() List~PaymentStatus~
@@ -70,6 +71,16 @@ classDiagram
         +int quantity
         +Decimal unitPrice
         +subtotal() Decimal
+    }
+
+    class Cart {
+        +Map quantities
+        +setQuantity(FoodItem item, int qty)
+        +remove(String itemId)
+        +isEmpty() Boolean
+        +itemIds() List~String~
+        +count() int
+        +toOrderLines(List~FoodItem~ items) List~OrderLine~
     }
 
     class UserRepository {
@@ -97,6 +108,8 @@ classDiagram
     Order --> PaymentStatus : has
     Order "*" --> "1" Event : is for
     OrderLine "*" --> "1" FoodItem : refers to
+    Cart ..> FoodItem : checks minimum of
+    Cart ..> OrderLine : creates
     UserRepository ..> User : stores
     OrderRepository ..> Order : stores
 

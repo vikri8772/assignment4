@@ -41,7 +41,15 @@
                   {% endfor %}
                 </p>
               {% endif %}
-              {# C2 adds an "Add to cart" button here. #}
+              {# C2: admins don't order food, so they get no button. #}
+              {% if not (g.user and g.user.is_admin()) %}
+                <form action="{{ url_for('shop.add_to_cart') }}" method="post" class="add-to-cart">
+                  <input type="hidden" name="item_id" value="{{ item.id }}">
+                  <input type="number" name="quantity" value="{{ item.min_order }}" min="{{ item.min_order }}" max="10000"
+                         aria-label="Quantity of {{ item.name }}">
+                  <button type="submit">Add to cart</button>
+                </form>
+              {% endif %}
             </div>
           </article>
         {% endfor %}

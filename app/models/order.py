@@ -47,6 +47,12 @@ PAYMENT_TRANSITIONS = {
 }
 
 
+# Limits for the order form (C3), from docs/plans/c3-checkout-sequence.md.
+MAX_GUESTS = 10_000
+MIN_ADDRESS_LENGTH = 5
+MAX_ADDRESS_LENGTH = 200
+
+
 class InvalidTransition(Exception):
     """A status change that the state machine does not allow."""
 
@@ -90,6 +96,33 @@ class Order:
 
     def total(self) -> Decimal:
         return sum((line.subtotal() for line in self.lines), Decimal("0"))
+
+    def problems(self, today: date) -> list[str]:
+        # C3: everything that is wrong with a new order, as messages for the customer. Empty means valid.
+        # "today" is a parameter so the tests don't depend on the date they run.
+        problems = []
+        if self.event_date < today:
+            problems.append("The event date can't be in the past.")
+        if not 1 <= self.number_of_guests <= MAX_GUESTS:
+            problems.append(f"The number of guests must be between 1 and {MAX_GUESTS:,}.")
+        if not MIN_ADDRESS_LENGTH <= len(self.delivery_address) <= MAX_ADDRESS_LENGTH:
+            problems.append(
+                f"The delivery address must be {MIN_ADDRESS_LENGTH} to {MAX_ADDRESS_LENGTH} characters."
+            )
+        if not self.lines:
+            problems.append("The order has no food.")
+        if not self.guest_groups:
+            problems.append("Add at least one guest group.")
+        for group in self.guest_groups:
+            if not group.group_name or group.number_of_guests < 1:
+                problems.append("Every guest group needs a name and at least 1 guest.")
+                break
+        group_total = sum(group.number_of_guests for group in self.guest_groups)
+        if self.guest_groups and group_total != self.number_of_guests:
+            problems.append(
+                f"The guest groups have {group_total} guests in total, but the order is for {self.number_of_guests}."
+            )
+        return problems
 
     def allowed_next_statuses(self) -> list[OrderStatus]:
         return list(ORDER_TRANSITIONS.get(self.order_status, []))

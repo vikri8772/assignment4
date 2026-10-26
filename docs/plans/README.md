@@ -9,6 +9,7 @@ File names follow `<feature>-<topic>-<type>.md`, for example `c3-checkout-sequen
 - [skeleton-plan.md](skeleton-plan.md) – the code skeleton (app, database, domain classes, login)
 - [a1-a2-c1-plan.md](a1-a2-c1-plan.md) – A1 food items, A2 item images and C1 menu (Maja)
 - [a3-c4-orders-plan.md](a3-c4-orders-plan.md) – orders: the Order model, A3 admin order pages and C4 my orders
+- [c2-c3-checkout-plan.md](c2-c3-checkout-plan.md) – C2 cart and C3 checkout (Torben)
 
 ## Overview
 
