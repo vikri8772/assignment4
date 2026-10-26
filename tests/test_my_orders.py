@@ -8,7 +8,7 @@ from app.models.food import Event, FoodItem
 from app.models.food_item_repository import FoodItemRepository
 from app.models.order import GuestGroup, Order, OrderLine, OrderStatus, PaymentStatus
 from app.models.order_repository import OrderRepository
-from app.models.user import User
+from app.models.user import Role, User
 from app.models.user_repository import UserRepository
 
 PASSWORD = "testpassord"
@@ -144,3 +144,15 @@ def test_nav_has_my_orders_link_when_logged_in(client, setup):
     log_in(client, "kari@example.test")
 
     assert "My orders" in client.get("/").get_data(as_text=True)
+
+
+def test_admin_has_no_my_orders_and_is_sent_to_all_orders(client, db, setup):
+    UserRepository(db).add(
+        User(name="Admin", email="admin@example.test", password_hash=generate_password_hash(PASSWORD), role=Role.ADMIN)
+    )
+    log_in(client, "admin@example.test")
+
+    assert "My orders" not in client.get("/").get_data(as_text=True)
+    response = client.get("/account/orders")
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/admin/orders")
