@@ -4,7 +4,7 @@ from decimal import Decimal
 import pytest
 
 from app.models.food import Event
-from app.models.order import InvalidTransition, Order, OrderLine, OrderStatus, PaymentStatus
+from app.models.order import MAX_GUESTS, GuestGroup, InvalidTransition, Order, OrderLine, OrderStatus, PaymentStatus
 
 S = OrderStatus
 P = PaymentStatus
@@ -140,3 +140,57 @@ def test_order_and_payment_status_are_independent():
     order.change_payment_status(P.DEPOSIT_PAID)
 
     assert order.order_status == S.SUBMITTED
+
+
+# C3: the checks on a new order. See docs/plans/c3-checkout-sequence.md.
+
+TODAY = date(2027, 1, 10)
+
+
+def valid_order(**changes):
+    changes.setdefault(
+        "guest_groups", [GuestGroup("Adults", 30, allergy_notes="2 nut allergies"), GuestGroup("Children", 10)]
+    )
+    return make_order(**changes)
+
+
+def test_valid_order_has_no_problems():
+    assert valid_order().problems(TODAY) == []
+
+
+def test_event_today_is_allowed_but_not_in_the_past():
+    assert valid_order(event_date=TODAY).problems(TODAY) == []
+    assert "past" in valid_order(event_date=date(2027, 1, 9)).problems(TODAY)[0]
+
+
+@pytest.mark.parametrize("guests", [0, MAX_GUESTS + 1])
+def test_number_of_guests_must_be_1_to_10000(guests):
+    order = valid_order(number_of_guests=guests, guest_groups=[GuestGroup("All", guests)])
+
+    assert any("number of guests" in p for p in order.problems(TODAY))
+
+
+@pytest.mark.parametrize("address", ["", "Bgn", "x" * 201])
+def test_address_length_is_checked(address):
+    assert any("address" in p for p in valid_order(delivery_address=address).problems(TODAY))
+
+
+def test_order_needs_food():
+    assert "The order has no food." in valid_order(lines=[]).problems(TODAY)
+
+
+def test_order_needs_a_guest_group():
+    assert "Add at least one guest group." in make_order(guest_groups=[]).problems(TODAY)
+
+
+@pytest.mark.parametrize("group", [GuestGroup("", 40), GuestGroup("Adults", 0)])
+def test_every_group_needs_a_name_and_guests(group):
+    order = make_order(guest_groups=[group])
+
+    assert any("needs a name" in p for p in order.problems(TODAY))
+
+
+def test_group_sizes_must_add_up_to_the_guests():
+    problems = valid_order(number_of_guests=45).problems(TODAY)
+
+    assert problems == ["The guest groups have 40 guests in total, but the order is for 45."]
