@@ -116,6 +116,22 @@ def unpublish_item(item_id):
     return redirect(url_for("admin.items_overview"))
 
 
+@bp.route("/items/<item_id>/delete", methods=["POST"])
+@admin_required
+def delete_item(item_id):
+    repo = FoodItemRepository(get_db())
+    item = _get_item_or_404(repo, item_id)
+    # Orders keep pointing to their food items, so an ordered item must stay.
+    if repo.is_used_in_orders(item.id):
+        flash(f"{item.name} is used in orders, so it can't be deleted. Unpublish it instead.")
+        return redirect(url_for("admin.items_overview"))
+
+    repo.delete(item.id)
+    _delete_picture(item.picture_path)
+    flash(f"{item.name} is deleted.")
+    return redirect(url_for("admin.items_overview"))
+
+
 @bp.errorhandler(413)
 def request_too_large(error):
     # Flask stops requests above MAX_CONTENT_LENGTH before our checks run.

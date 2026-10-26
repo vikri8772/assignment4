@@ -1,11 +1,14 @@
 import io
 import os
+from datetime import date
 from decimal import Decimal
 
 import pytest
 
 from app.models.food import Diet, Event, FoodItem
 from app.models.food_item_repository import FoodItemRepository
+from app.models.order import Order, OrderLine
+from app.models.order_repository import OrderRepository
 from app.models.user import Role, User
 from app.models.user_repository import UserRepository
 
@@ -356,3 +359,82 @@ def test_picture_is_shown_on_menu_and_admin_list(client, db, food, soup):
     assert f'src="/static/{path}"' in client.get("/").get_data(as_text=True)
     assert f'src="/static/{path}"' in client.get("/admin/").get_data(as_text=True)
     assert f'src="/static/{path}"' in client.get(f"/admin/items/{soup.id}/edit").get_data(as_text=True)
+
+
+# Delete (step 5)
+
+
+def order_item(db, item):
+    # Saves an order with one line for the item, made by a new customer.
+    customer = User(name="Kari", email="kari@example.test", password_hash="x")
+    UserRepository(db).add(customer)
+    order = Order(
+        user_id=customer.id,
+        event=WEDDING,
+        event_date=date(2027, 5, 15),
+        number_of_guests=20,
+        delivery_address="Bryggen 1, Bergen",
+        lines=[OrderLine(item.id, item.name, 20, item.price)],
+    )
+    OrderRepository(db).add(order)
+
+
+def test_is_used_in_orders(db, food, soup, stew):
+    order_item(db, soup)
+
+    assert food.is_used_in_orders(soup.id)
+    assert not food.is_used_in_orders(stew.id)
+
+
+def test_delete_item_that_is_not_ordered(client, db, food, stew):
+    log_in_as(client, db, Role.ADMIN)
+
+    page = client.post(f"/admin/items/{stew.id}/delete", follow_redirects=True).get_data(as_text=True)
+
+    assert "Hjortegryte is deleted" in page
+    assert food.get_by_id(stew.id) is None
+
+
+def test_ordered_item_is_not_deleted(client, db, food, soup):
+    order_item(db, soup)
+    log_in_as(client, db, Role.ADMIN)
+
+    page = client.post(f"/admin/items/{soup.id}/delete", follow_redirects=True).get_data(as_text=True)
+
+    assert "used in orders" in page
+    assert "Unpublish it instead" in page
+    assert food.get_by_id(soup.id) is not None
+
+
+def test_delete_removes_the_picture_file(app, client, db, food, stew):
+    log_in_as(client, db, Role.ADMIN)
+    client.post(f"/admin/items/{stew.id}/edit", data=VALID_FORM | {"picture": picture(PNG)})
+    assert len(uploaded_files(app)) == 1
+
+    client.post(f"/admin/items/{stew.id}/delete")
+
+    assert uploaded_files(app) == []
+
+
+def test_delete_unknown_item_gives_404(client, db, food):
+    log_in_as(client, db, Role.ADMIN)
+
+    assert client.post("/admin/items/does-not-exist/delete").status_code == 404
+
+
+def test_delete_needs_post_and_admin(client, db, food, stew):
+    # A link (GET) can't delete, and customers can't delete.
+    log_in_as(client, db, Role.CUSTOMER)
+
+    assert client.get(f"/admin/items/{stew.id}/delete").status_code == 405
+    assert client.post(f"/admin/items/{stew.id}/delete").status_code == 403
+    assert food.get_by_id(stew.id) is not None
+
+
+def test_list_has_delete_button_with_confirm(client, db, food, stew):
+    log_in_as(client, db, Role.ADMIN)
+
+    page = client.get("/admin/").get_data(as_text=True)
+
+    assert f'action="/admin/items/{stew.id}/delete"' in page
+    assert 'data-name="Hjortegryte"' in page

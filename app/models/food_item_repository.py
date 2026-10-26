@@ -64,7 +64,10 @@ class FoodItemRepository:
         with self.db:
             self.db.execute("DELETE FROM food_item WHERE id = ?", (id,))
 
-    # is_used_in_orders(id) is added when the order tables exist (see docs/plans/skeleton-plan.md).
+    def is_used_in_orders(self, id):
+        # True if any order has a line with this item. Such items can't be deleted (A1).
+        row = self.db.execute("SELECT 1 FROM order_line WHERE food_item_id = ? LIMIT 1", (id,)).fetchone()
+        return row is not None
 
     # Events and diets are fixed lists, created by seed.py.
 
