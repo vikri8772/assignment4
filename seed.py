@@ -28,7 +28,8 @@ VEGETARIAN = Diet("Vegetarian")
 VEGAN = Diet("Vegan")
 GLUTEN_FREE = Diet("Gluten-free")
 LACTOSE_FREE = Diet("Lactose-free")
-DIETS = [VEGETARIAN, VEGAN, GLUTEN_FREE, LACTOSE_FREE]
+HALAL = Diet("Halal")  # often asked for in the order export (data pack)
+DIETS = [VEGETARIAN, VEGAN, GLUTEN_FREE, LACTOSE_FREE, HALAL]
 
 FOOD_ITEMS = [
     FoodItem(
