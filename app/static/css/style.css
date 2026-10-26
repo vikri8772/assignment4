@@ -181,6 +181,56 @@ nav span {
   margin-bottom: 1rem;
 }
 
+/* A2 Pictures */
+
+.picture-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.picture-row figure {
+  margin: 0 0 0.5rem;
+}
+
+.picture-row img,
+.picture-row .no-picture {
+  width: 200px;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.picture-row .no-picture {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e7e5e4;
+  color: #78716c;
+}
+
+.picture-error {
+  margin: 0.25rem 0;
+  color: #b91c1c;
+}
+
+.hint {
+  margin: 0.25rem 0;
+  color: #78716c;
+  font-size: 0.9rem;
+}
+
+.thumbnail {
+  width: 64px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.no-thumbnail {
+  color: #a8a29e;
+}
+
 /* Order tables and status badges (A3, C4) */
 
 table.orders {

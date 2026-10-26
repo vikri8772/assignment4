@@ -1,7 +1,9 @@
+import os
 from datetime import date
 from decimal import Decimal, InvalidOperation
+from uuid import uuid4
 
-from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, url_for
 
 from app.controllers.auth import admin_required
 from app.models.db import get_db
@@ -15,6 +17,11 @@ bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 # Highest price an admin can type in, to catch typos like an extra zero.
 MAX_PRICE = Decimal("100000")
+
+# A2 Pictures: at most 5 MB, JPG or PNG. The type is read from the first bytes
+# of the file itself, because a file name like "cake.png" can be wrong.
+MAX_PICTURE_SIZE = 5 * 1024 * 1024
+PICTURE_TYPES = {b"\xff\xd8\xff": "jpg", b"\x89PNG\r\n\x1a\n": "png"}
 
 
 # A1 Food items. See docs/plans/a1-manage-items-sequence.md and a1-edit-item-sequence.md.
@@ -33,6 +40,9 @@ def new_item():
     repo = FoodItemRepository(get_db())
     if request.method == "POST":
         fields, errors = _read_item_form(repo)
+        picture, picture_error = _read_picture()
+        if picture_error:
+            errors.append(picture_error)
         if errors:
             for error in errors:
                 flash(error)
@@ -40,6 +50,8 @@ def new_item():
 
         # New items start unpublished, so the admin can check them before customers see them.
         item = FoodItem(**fields)
+        if picture:
+            item.picture_path = _save_picture(picture)
         repo.add(item)
         flash(f"{item.name} is saved. Publish it to show it on the menu.")
         return redirect(url_for("admin.items_overview"))
@@ -54,6 +66,9 @@ def edit_item(item_id):
     item = _get_item_or_404(repo, item_id)
     if request.method == "POST":
         fields, errors = _read_item_form(repo)
+        picture, picture_error = _read_picture()
+        if picture_error:
+            errors.append(picture_error)
         if errors:
             for error in errors:
                 flash(error)
@@ -66,7 +81,13 @@ def edit_item(item_id):
         item.events = fields["events"]
         item.diets = fields["diets"]
         item.allergens = fields["allergens"]
+        if picture:
+            # No new file chosen means: keep the current picture.
+            old_picture = item.picture_path
+            item.picture_path = _save_picture(picture)
         repo.update(item)
+        if picture:
+            _delete_picture(old_picture)
         flash(f"{item.name} is saved.")
         return redirect(url_for("admin.items_overview"))
 
@@ -93,6 +114,13 @@ def unpublish_item(item_id):
     repo.update(item)
     flash(f"{item.name} is unpublished and hidden from the menu.")
     return redirect(url_for("admin.items_overview"))
+
+
+@bp.errorhandler(413)
+def request_too_large(error):
+    # Flask stops requests above MAX_CONTENT_LENGTH before our checks run.
+    flash("The picture is too large. Choose a JPG or PNG of at most 5 MB.")
+    return redirect(request.path)
 
 
 def _get_item_or_404(repo, item_id):
@@ -148,6 +176,42 @@ def _read_item_form(repo):
         "allergens": allergens,
     }
     return fields, errors
+
+
+# A2 Pictures. See docs/plans/a2-item-image-sequence.md.
+
+
+def _read_picture():
+    # Checks the uploaded picture. Returns (picture, error): picture is (bytes, extension) or None.
+    file = request.files.get("picture")
+    if file is None or file.filename == "":
+        return None, None  # no new picture chosen
+
+    data = file.read(MAX_PICTURE_SIZE + 1)
+    if len(data) > MAX_PICTURE_SIZE:
+        return None, "The picture is larger than 5 MB. Choose a smaller one."
+    for start, extension in PICTURE_TYPES.items():
+        if data.startswith(start):
+            return (data, extension), None
+    return None, "The picture must be a JPG or PNG file. Choose it again."
+
+
+def _save_picture(picture):
+    # Saves the file under a new unique name and returns its path inside static/.
+    data, extension = picture
+    filename = f"{uuid4().hex}.{extension}"
+    with open(os.path.join(current_app.config["UPLOAD_FOLDER"], filename), "wb") as file:
+        file.write(data)
+    return f"uploads/{filename}"
+
+
+def _delete_picture(picture_path):
+    # Removes a replaced picture, so old files don't pile up.
+    if not picture_path or not picture_path.startswith("uploads/"):
+        return
+    path = os.path.join(current_app.config["UPLOAD_FOLDER"], os.path.basename(picture_path))
+    if os.path.exists(path):
+        os.remove(path)
 
 
 # The form shows "values": what is saved (when it opens) or what the admin typed (after an error).

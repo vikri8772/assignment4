@@ -1,3 +1,5 @@
+import io
+import os
 from decimal import Decimal
 
 import pytest
@@ -241,3 +243,116 @@ def test_customer_cannot_create_items(client, db, food):
 
     assert client.post("/admin/items/new", data=VALID_FORM).status_code == 403
     assert food.get_all() == []
+
+
+# Pictures (step 4, A2)
+
+PNG = b"\x89PNG\r\n\x1a\n" + b"fake picture data"
+JPG = b"\xff\xd8\xff" + b"fake picture data"
+
+
+def picture(data, filename="picture.png"):
+    # A file for the form, as the test client sends it.
+    return (io.BytesIO(data), filename)
+
+
+def uploaded_files(app):
+    return os.listdir(app.config["UPLOAD_FOLDER"])
+
+
+def test_create_item_with_picture_saves_the_file(app, client, db, food):
+    log_in_as(client, db, Role.ADMIN)
+
+    response = client.post("/admin/items/new", data=VALID_FORM | {"picture": picture(PNG)})
+
+    assert response.status_code == 302
+    [item] = food.get_all()
+    [filename] = uploaded_files(app)
+    assert item.picture_path == f"uploads/{filename}"
+    assert filename.endswith(".png")
+    with open(os.path.join(app.config["UPLOAD_FOLDER"], filename), "rb") as file:
+        assert file.read() == PNG
+
+
+def test_type_comes_from_the_file_not_the_name(app, client, db, food):
+    log_in_as(client, db, Role.ADMIN)
+
+    client.post("/admin/items/new", data=VALID_FORM | {"picture": picture(JPG, "photo.png")})
+
+    [filename] = uploaded_files(app)
+    assert filename.endswith(".jpg")
+
+
+@pytest.mark.parametrize(
+    "data, message",
+    [
+        (b"GIF89a not allowed", "must be a JPG or PNG"),
+        (b"just some text", "must be a JPG or PNG"),
+        (PNG + b"x" * (5 * 1024 * 1024), "larger than 5 MB"),
+    ],
+    ids=["gif", "text", "too-big"],  # short names, so pytest doesn't print 5 MB of data
+)
+def test_wrong_picture_is_not_saved(app, client, db, food, data, message):
+    log_in_as(client, db, Role.ADMIN)
+
+    response = client.post("/admin/items/new", data=VALID_FORM | {"picture": picture(data)})
+
+    assert response.status_code == 400
+    assert message in response.get_data(as_text=True)
+    assert food.get_all() == []
+    assert uploaded_files(app) == []
+
+
+def test_huge_request_gives_a_message_not_a_crash(app, client, db, food):
+    log_in_as(client, db, Role.ADMIN)
+
+    response = client.post(
+        "/admin/items/new",
+        data=VALID_FORM | {"picture": picture(PNG + b"x" * (7 * 1024 * 1024))},
+        follow_redirects=True,
+    )
+
+    assert "The picture is too large" in response.get_data(as_text=True)
+    assert food.get_all() == []
+
+
+def test_picture_is_not_saved_when_other_fields_are_wrong(app, client, db, food):
+    log_in_as(client, db, Role.ADMIN)
+
+    response = client.post("/admin/items/new", data=VALID_FORM | {"name": "", "picture": picture(PNG)})
+
+    assert response.status_code == 400
+    assert uploaded_files(app) == []
+
+
+def test_edit_without_new_picture_keeps_the_old_one(app, client, db, food, soup):
+    log_in_as(client, db, Role.ADMIN)
+    client.post(f"/admin/items/{soup.id}/edit", data=VALID_FORM | {"picture": picture(PNG)})
+    old_path = food.get_by_id(soup.id).picture_path
+
+    client.post(f"/admin/items/{soup.id}/edit", data=VALID_FORM)
+
+    assert food.get_by_id(soup.id).picture_path == old_path
+    assert len(uploaded_files(app)) == 1
+
+
+def test_new_picture_replaces_and_deletes_the_old_one(app, client, db, food, soup):
+    log_in_as(client, db, Role.ADMIN)
+    client.post(f"/admin/items/{soup.id}/edit", data=VALID_FORM | {"picture": picture(PNG)})
+    [old_file] = uploaded_files(app)
+
+    client.post(f"/admin/items/{soup.id}/edit", data=VALID_FORM | {"picture": picture(JPG, "new.jpg")})
+
+    [new_file] = uploaded_files(app)
+    assert new_file != old_file
+    assert food.get_by_id(soup.id).picture_path == f"uploads/{new_file}"
+
+
+def test_picture_is_shown_on_menu_and_admin_list(client, db, food, soup):
+    log_in_as(client, db, Role.ADMIN)
+    client.post(f"/admin/items/{soup.id}/edit", data=VALID_FORM | {"picture": picture(PNG)})
+    path = food.get_by_id(soup.id).picture_path
+
+    assert f'src="/static/{path}"' in client.get("/").get_data(as_text=True)
+    assert f'src="/static/{path}"' in client.get("/admin/").get_data(as_text=True)
+    assert f'src="/static/{path}"' in client.get(f"/admin/items/{soup.id}/edit").get_data(as_text=True)
