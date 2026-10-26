@@ -4,5 +4,48 @@
 
 {% block content %}
   <h2>Menu</h2>
-  <p>The menu comes here (C1).</p>
+
+  {% if not menu %}
+    <p>The menu is empty right now. Please come back later.</p>
+  {% else %}
+    <nav class="event-links">
+      {% for event, items in menu %}
+        <a href="#event-{{ event.name | lower }}">{{ event.name }}</a>
+      {% endfor %}
+    </nav>
+  {% endif %}
+
+  {% for event, items in menu %}
+    <section id="event-{{ event.name | lower }}" class="event">
+      <h3>{{ event.name }}</h3>
+      <div class="cards">
+        {% for item in items %}
+          <article class="card">
+            {% if item.picture_path %}
+              <img src="{{ url_for('static', filename=item.picture_path) }}" alt="{{ item.name }}">
+            {% else %}
+              <div class="no-picture">No picture yet</div>
+            {% endif %}
+            <div class="card-body">
+              <h4>{{ item.name }}</h4>
+              <p>{{ item.desc }}</p>
+              <p class="price">{{ item.price }} NOK</p>
+              <p>Minimum order: {{ item.min_order }}</p>
+              <p class="allergens">
+                Allergens: {{ item.allergens | join(", ") if item.allergens else "none" }}
+              </p>
+              {% if item.diets %}
+                <p>
+                  {% for diet in item.diets %}
+                    <span class="label">{{ diet.name }}</span>
+                  {% endfor %}
+                </p>
+              {% endif %}
+              {# C2 adds an "Add to cart" button here. #}
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+  {% endfor %}
 {% endblock %}

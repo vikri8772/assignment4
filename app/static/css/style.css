@@ -52,3 +52,65 @@ nav span {
   flex-direction: column;
   gap: 0.25rem;
 }
+
+/* C1 Menu */
+
+.event-links a {
+  margin-right: 1rem;
+  color: #14532d;  /* the header's "nav a" rule makes links white */
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  overflow: hidden;
+  border: 1px solid #e7e5e4;
+  border-radius: 8px;
+  background: white;
+}
+
+.card img,
+.card .no-picture {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.card .no-picture {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e7e5e4;
+  color: #78716c;
+}
+
+.card-body {
+  padding: 0.75rem;
+}
+
+.card-body h4,
+.card-body p {
+  margin: 0 0 0.5rem;
+}
+
+.price {
+  font-weight: bold;
+}
+
+.allergens {
+  color: #9a3412;
+}
+
+.label {
+  display: inline-block;
+  margin: 0 0.25rem 0.25rem 0;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #14532d;
+  font-size: 0.85rem;
+}
