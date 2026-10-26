@@ -316,7 +316,7 @@ button.danger {
   color: #b91c1c;
 }
 
-/* C2 Cart */
+/* C2 Cart and C3 Checkout */
 
 .add-to-cart,
 .cart-quantity {
@@ -342,4 +342,13 @@ button.danger {
   background: #14532d;
   color: white;
   text-decoration: none;
+}
+
+.checkout-form {
+  max-width: 760px;
+}
+
+.guest-groups input {
+  width: 100%;
+  box-sizing: border-box;
 }

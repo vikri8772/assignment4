@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout – Ekte Mat Online{% endblock %}
+
+{% block content %}
+  <p><a href="{{ url_for('shop.cart') }}">← Back to cart</a></p>
+  <h2>Checkout</h2>
+
+  <h3>Your food</h3>
+  <table class="orders">
+    <thead>
+      <tr><th>Item</th><th class="number">Quantity</th><th class="number">Subtotal</th></tr>
+    </thead>
+    <tbody>
+      {% for line in lines %}
+        <tr>
+          <td>{{ line.item_name }}</td>
+          <td class="number">{{ line.quantity }}</td>
+          <td class="number">{{ '%.2f'|format(line.subtotal()) }} kr</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr><th colspan="2">Estimated total</th><th class="number">{{ '%.2f'|format(total) }} kr</th></tr>
+    </tfoot>
+  </table>
+
+  <form method="post" class="form checkout-form">
+    <h3>The event</h3>
+    <label>Event type
+      <select name="event" required>
+        <option value="">Choose…</option>
+        {% for event in events %}
+          <option value="{{ event.name }}" {% if form.get('event') == event.name %}selected{% endif %}>{{ event.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Event date
+      <input type="date" name="event_date" min="{{ today }}" value="{{ form.get('event_date', '') }}" required>
+    </label>
+    <label>Number of guests
+      <input type="number" name="number_of_guests" min="1" max="10000" value="{{ form.get('number_of_guests', '') }}" required>
+    </label>
+    <label>Delivery address
+      <input type="text" name="delivery_address" minlength="5" maxlength="200" value="{{ form.get('delivery_address', '') }}" required>
+    </label>
+
+    <h3>Guest groups</h3>
+    <p class="hint">
+      Split the guests into groups, for example "Adults" and "Children". The group sizes must add up to the number of guests.
+      Write allergies and diets per group, not names of guests. Leave rows you don't need empty.
+    </p>
+    <div class="table-scroll">
+      <table class="orders guest-groups">
+        <thead>
+          <tr><th>Group name</th><th>Guests</th><th>Allergies</th><th>Diets</th></tr>
+        </thead>
+        <tbody>
+          {% for i in group_rows %}
+            <tr>
+              <td><input type="text" name="group_name_{{ i }}" value="{{ form.get('group_name_%d' % i, 'Adults' if i == 0 and not form else '') }}" aria-label="Group {{ i + 1 }} name"></td>
+              <td><input type="number" name="group_guests_{{ i }}" min="1" max="10000" value="{{ form.get('group_guests_%d' % i, '') }}" aria-label="Group {{ i + 1 }} guests"></td>
+              <td><input type="text" name="group_allergies_{{ i }}" placeholder="e.g. 2 nut allergies, or none" value="{{ form.get('group_allergies_%d' % i, '') }}" aria-label="Group {{ i + 1 }} allergies"></td>
+              <td><input type="text" name="group_diets_{{ i }}" placeholder="e.g. 3 vegetarians" value="{{ form.get('group_diets_%d' % i, '') }}" aria-label="Group {{ i + 1 }} diets"></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <button type="submit">Submit order</button>
+  </form>
+{% endblock %}

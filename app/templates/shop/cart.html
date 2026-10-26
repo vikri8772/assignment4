@@ -44,6 +44,8 @@
 
     <div class="page-actions">
       <a href="{{ url_for('shop.menu') }}">← Add more food</a>
+      {# Not logged in? /checkout sends the customer to log in, and the cart is kept (C3). #}
+      <a class="button" href="{{ url_for('shop.checkout') }}">Go to checkout</a>
     </div>
   {% endif %}
 {% endblock %}
