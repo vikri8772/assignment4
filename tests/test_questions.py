@@ -171,3 +171,137 @@ def test_asking_on_unknown_order_gives_404(kari, db, setup):
 
     assert response.status_code == 404
     assert len(QuestionRepository(db).get_all()) == 3
+
+
+# A4 Answer questions
+
+
+@pytest.fixture
+def admin(client, setup):
+    log_in(client, "admin@example.test")
+    return client
+
+
+def find_question(db, text):
+    return next(q for q in QuestionRepository(db).get_all() if q.text == text)
+
+
+def admin_urls(db):
+    question = find_question(db, "Can the cake be made without milk?")
+    return [
+        ("get", "/admin/questions"),
+        ("get", f"/admin/questions/{question.id}"),
+        ("post", f"/admin/questions/{question.id}/answer"),
+    ]
+
+
+def test_admin_pages_redirect_logged_out_visitors(client, db, setup):
+    for method, url in admin_urls(db):
+        response = getattr(client, method)(url, data={"text": "Yes."})
+        assert response.status_code == 302, url
+        assert "/account/login" in response.headers["Location"]
+
+
+def test_admin_pages_give_403_to_customers(kari, db, setup):
+    for method, url in admin_urls(db):
+        assert getattr(kari, method)(url, data={"text": "Yes."}).status_code == 403, url
+
+    assert not find_question(db, "Can the cake be made without milk?").is_answered()
+
+
+def test_list_shows_open_questions_first(admin, setup):
+    page = admin.get("/admin/questions").get_data(as_text=True)
+
+    # Open, newest first: Ola's (22 Oct), Kari's cake (20 Oct). Then the answered one (21 Oct).
+    olas = page.index("Is the wrap packed separately?")
+    cake = page.index("Can the cake be made without milk?")
+    answered = page.index("Can you deliver at 17:00?")
+    assert olas < cake < answered
+    assert "Kari" in page and "Ola" in page
+    assert "3 questions, 2 open." in page
+
+
+def test_list_without_questions_shows_a_message(admin, db, setup):
+    with db:
+        db.execute("DELETE FROM question")
+
+    assert "No questions from customers yet." in admin.get("/admin/questions").get_data(as_text=True)
+
+
+def test_open_question_shows_the_answer_form(admin, db, setup):
+    question = find_question(db, "Can the cake be made without milk?")
+
+    page = admin.get(f"/admin/questions/{question.id}").get_data(as_text=True)
+
+    assert "Can the cake be made without milk?" in page
+    assert "kari@example.test" in page
+    assert f"/admin/questions/{question.id}/answer" in page
+
+
+def test_answered_question_shows_the_answer_and_no_form(admin, db, setup):
+    question = find_question(db, "Can you deliver at 17:00?")
+
+    page = admin.get(f"/admin/questions/{question.id}").get_data(as_text=True)
+
+    assert "Yes, 17:00 is fine." in page
+    assert f"/admin/questions/{question.id}/answer" not in page
+
+
+def test_answering_saves_the_answer_and_goes_to_the_list(admin, db, setup):
+    question = find_question(db, "Can the cake be made without milk?")
+
+    response = admin.post(f"/admin/questions/{question.id}/answer", data={"text": "  Yes, we can.  "})
+
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/admin/questions")
+    saved = QuestionRepository(db).get_by_id(question.id)
+    assert saved.status == QuestionStatus.ANSWERED
+    assert saved.given_answer.text == "Yes, we can."
+    assert saved.given_answer.answered_by == UserRepository(db).get_by_email("admin@example.test").id
+
+
+def test_answering_twice_gives_400_and_keeps_the_first_answer(admin, db, setup):
+    question = find_question(db, "Can you deliver at 17:00?")
+
+    response = admin.post(f"/admin/questions/{question.id}/answer", data={"text": "No, sorry."})
+
+    assert response.status_code == 400
+    assert "This question is already answered." in response.get_data(as_text=True)
+    assert QuestionRepository(db).get_by_id(question.id).given_answer.text == "Yes, 17:00 is fine."
+
+
+@pytest.mark.parametrize("text", ["", "   ", "x" * (MAX_TEXT_LENGTH + 1)])
+def test_empty_or_too_long_answer_gives_400_and_saves_nothing(admin, db, setup, text):
+    question = find_question(db, "Can the cake be made without milk?")
+
+    response = admin.post(f"/admin/questions/{question.id}/answer", data={"text": text})
+
+    assert response.status_code == 400
+    assert not QuestionRepository(db).get_by_id(question.id).is_answered()
+
+
+def test_unknown_question_gives_404(admin, setup):
+    assert admin.get("/admin/questions/no-such-id").status_code == 404
+    assert admin.post("/admin/questions/no-such-id/answer", data={"text": "Yes."}).status_code == 404
+
+
+def test_customer_sees_the_answer_on_the_order_page(client, db, setup):
+    karis_order, _ = setup
+    question = find_question(db, "Can the cake be made without milk?")
+    log_in(client, "admin@example.test")
+    client.post(f"/admin/questions/{question.id}/answer", data={"text": "Yes, we can make it without milk."})
+    client.post("/account/logout")
+
+    log_in(client, "kari@example.test")
+    page = client.get(f"/account/orders/{karis_order.id}").get_data(as_text=True)
+
+    assert "Yes, we can make it without milk." in page
+
+
+def test_nav_has_questions_link_only_for_admins(client, setup):
+    log_in(client, "kari@example.test")
+    assert "/admin/questions" not in client.get("/").get_data(as_text=True)
+    client.post("/account/logout")
+
+    log_in(client, "admin@example.test")
+    assert "/admin/questions" in client.get("/").get_data(as_text=True)
