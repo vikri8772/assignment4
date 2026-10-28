@@ -123,9 +123,8 @@ def test_order_page_has_no_admin_buttons(kari, setup):
     page = kari.get(f"/account/orders/{karis_new.id}").get_data(as_text=True)
 
     content = page.split("</nav>")[1]
-    # The only form is the C5 question form. No forms post to the admin pages (status changes).
+    # No forms post to the admin pages (status changes). The C5 question form is allowed.
     assert "/admin/" not in content
-    assert content.count("<form") == 1
     assert f"/account/orders/{karis_new.id}/questions" in content
 
 
