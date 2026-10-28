@@ -3,7 +3,7 @@ from datetime import date
 from decimal import Decimal, InvalidOperation
 from uuid import uuid4
 
-from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, current_app, flash, g, redirect, render_template, request, url_for
 
 from app.controllers.auth import admin_required
 from app.models.db import get_db
@@ -11,6 +11,8 @@ from app.models.food import ALLERGENS, MAX_QUANTITY, FoodItem
 from app.models.food_item_repository import FoodItemRepository
 from app.models.order import InvalidTransition, OrderStatus, PaymentStatus
 from app.models.order_repository import OrderRepository
+from app.models.question import MAX_TEXT_LENGTH
+from app.models.question_repository import QuestionRepository
 from app.models.user_repository import UserRepository
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -373,3 +375,71 @@ def _parse_date(value, field_name):
     except ValueError:
         flash(f"{field_name} is not a valid date. It was ignored.")
         return None
+
+
+# A4 Answer questions. See docs/plans/a4-answer-question-sequence.md.
+
+
+@bp.route("/questions")
+@admin_required
+def questions():
+    questions = QuestionRepository(get_db()).get_all()  # open first, then newest
+    users = UserRepository(get_db())
+    orders = OrderRepository(get_db())
+    return render_template(
+        "admin/questions.html",
+        questions=questions,
+        customers={user_id: users.get_by_id(user_id) for user_id in {q.asked_by for q in questions}},
+        orders={order_id: orders.get_by_id(order_id) for order_id in {q.order_id for q in questions}},
+    )
+
+
+@bp.route("/questions/<question_id>")
+@admin_required
+def question_detail(question_id):
+    question = _get_question_or_404(question_id)
+    return _render_question(question)
+
+
+@bp.route("/questions/<question_id>/answer", methods=["POST"])
+@admin_required
+def answer_question(question_id):
+    question = _get_question_or_404(question_id)
+    text = request.form.get("text", "").strip()
+
+    # A question can only be answered once (docs/plans/c5-question-status-state.md).
+    if question.is_answered():
+        flash("This question is already answered.")
+        return _render_question(question), 400
+
+    error = None
+    if not text:
+        error = "Write an answer before you send it."
+    elif len(text) > MAX_TEXT_LENGTH:
+        error = f"The answer can be at most {MAX_TEXT_LENGTH} characters."
+    if error:
+        flash(error)
+        return _render_question(question, answer_text=text), 400
+
+    question.answer(text, g.user)
+    QuestionRepository(get_db()).update(question)
+    flash("The answer is saved. The customer sees it on their order page.")
+    return redirect(url_for("admin.questions"))
+
+
+def _get_question_or_404(question_id):
+    question = QuestionRepository(get_db()).get_by_id(question_id)
+    if question is None:
+        abort(404)
+    return question
+
+
+def _render_question(question, answer_text=""):
+    return render_template(
+        "admin/question_form.html",
+        question=question,
+        customer=UserRepository(get_db()).get_by_id(question.asked_by),
+        order=OrderRepository(get_db()).get_by_id(question.order_id),
+        answer_text=answer_text,
+        max_answer_length=MAX_TEXT_LENGTH,
+    )

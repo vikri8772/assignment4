@@ -4,6 +4,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from app.controllers.auth import login_required
 from app.models.db import get_db
 from app.models.order_repository import OrderRepository
+from app.models.question import MAX_TEXT_LENGTH, Question
+from app.models.question_repository import QuestionRepository
 from app.models.user import User
 from app.models.user_repository import UserRepository
 
@@ -85,11 +87,50 @@ def my_orders():
 @bp.route("/orders/<order_id>")
 @login_required
 def my_order_detail(order_id):
+    order = _get_own_order_or_404(order_id)
+    return _render_my_order(order)
+
+
+# C5 Questions about an order. See docs/plans/c5-qa-sequence.md.
+
+
+@bp.route("/orders/<order_id>/questions", methods=["POST"])
+@login_required
+def ask_question(order_id):
+    order = _get_own_order_or_404(order_id)
+    text = request.form.get("text", "").strip()
+
+    error = None
+    if not text:
+        error = "Write your question before you send it."
+    elif len(text) > MAX_TEXT_LENGTH:
+        error = f"The question can be at most {MAX_TEXT_LENGTH} characters."
+    if error:
+        flash(error)
+        return _render_my_order(order, question_text=text), 400
+
+    QuestionRepository(get_db()).add(Question(order_id=order.id, asked_by=g.user.id, text=text))
+    flash("Your question is sent. We will answer it here.")
+    return redirect(url_for("account.my_order_detail", order_id=order.id))
+
+
+def _get_own_order_or_404(order_id):
     order = OrderRepository(get_db()).get_by_id(order_id)
     # Same 404 for a missing order and someone else's order, so nobody can find out which order IDs exist.
     if order is None or not order.belongs_to(g.user.id):
         abort(404)
-    return render_template("account/order_detail.html", order=order)
+    return order
+
+
+def _render_my_order(order, question_text=""):
+    questions = QuestionRepository(get_db()).get_by_order(order.id)
+    return render_template(
+        "account/order_detail.html",
+        order=order,
+        questions=questions,
+        question_text=question_text,
+        max_question_length=MAX_TEXT_LENGTH,
+    )
 
 
 def _safe_next_url():

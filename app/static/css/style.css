@@ -352,3 +352,39 @@ button.danger {
   width: 100%;
   box-sizing: border-box;
 }
+
+/* C5 Questions and A4 Answers */
+
+.question-open { background: #fef3c7; }
+.question-answered { background: #dcfce7; }
+
+.questions {
+  list-style: none;
+  padding: 0;
+  max-width: 640px;
+}
+
+.question {
+  padding: 0.5rem 1rem;
+  margin-bottom: 0.75rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+}
+
+.question-meta {
+  color: #78716c;
+  font-size: 0.85rem;
+}
+
+.answer {
+  padding-left: 1rem;
+  border-left: 3px solid #14532d;
+}
+
+.question-form {
+  max-width: 640px;
+}
+
+.question-form textarea {
+  font: inherit;
+}

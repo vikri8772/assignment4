@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Questions – Ekte Mat Online{% endblock %}
+
+{% block content %}
+  <h2>Questions</h2>
+
+  {% if questions %}
+    <table class="orders">
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Asked</th>
+          <th>Customer</th>
+          <th>Order</th>
+          <th>Question</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for question in questions %}
+          {% set order = orders[question.order_id] %}
+          <tr>
+            <td><span class="badge question-{{ question.status.value|lower }}">{{ question.status.label }}</span></td>
+            <td>{{ question.asked_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>{{ customers[question.asked_by].name }}</td>
+            <td><a href="{{ url_for('admin.order_detail', order_id=order.id) }}">{{ order.event.name }}, {{ order.event_date.isoformat() }}</a></td>
+            <td>{{ question.text|truncate(80) }}</td>
+            <td>
+              <a href="{{ url_for('admin.question_detail', question_id=question.id) }}">
+                {{ 'View' if question.is_answered() else 'Answer' }}
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% set open_count = questions|rejectattr('given_answer')|list|length %}
+    <p>{{ questions|length }} question{{ 's' if questions|length != 1 }}, {{ open_count }} open.</p>
+  {% else %}
+    <p>No questions from customers yet.</p>
+  {% endif %}
+{% endblock %}
