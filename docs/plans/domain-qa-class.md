@@ -1,6 +1,6 @@
 # Questions and answers – class diagram
 
-The domain classes for customer questions (C5) and admin answers (A4). `User`, `Role` and `Order` are defined in `domain-orders-class.md`.
+The domain classes for customer questions (C5) and admin answers (A4). `User`, `Role` and `Order` are defined in `domain-orders-class.md`. In the code the answer is the attribute `given_answer`, because `answer` is the name of the method.
 
 ```mermaid
 classDiagram
@@ -11,8 +11,13 @@ classDiagram
         +text: String
         +askedAt: DateTime
         +status: QuestionStatus
+        +givenAnswer: Answer
         +isAnswered() Boolean
         +answer(String text, User admin)
+    }
+
+    class AlreadyAnswered {
+        <<exception>>
     }
 
     class Answer {
@@ -50,5 +55,6 @@ classDiagram
     Order "1" -- "0..*" Question : is about
     Question "1" *-- "0..1" Answer : has
     Question --> QuestionStatus : has
+    Question ..> AlreadyAnswered : answer() raises when ANSWERED
     QuestionRepository ..> Question : stores
 ```

@@ -1,10 +1,11 @@
 import os
 
-from seed import DIETS, FOOD_ITEMS, ORDERS, USERS, seed
+from seed import DIETS, FOOD_ITEMS, ORDERS, QUESTIONS, USERS, seed
 
 from app.models.food import ALLERGENS
 from app.models.food_item_repository import FoodItemRepository
 from app.models.order_repository import OrderRepository
+from app.models.question_repository import QuestionRepository
 from app.models.user_repository import UserRepository
 
 
@@ -30,6 +31,20 @@ def test_seed_creates_orders_for_the_customers(app, db):
     assert len(orders.find()) == len(ORDERS)
     kari = users.get_by_email("kari@example.test")
     assert len(orders.get_by_user(kari.id)) == 3
+
+
+def test_seed_creates_questions_on_the_customers_orders(app, db):
+    with app.app_context():
+        seed()
+
+    questions = QuestionRepository(db).get_all()
+    assert len(questions) == len(QUESTIONS)
+    assert len([q for q in questions if q.is_answered()]) == 1
+
+    # Every question is on an order that belongs to the customer who asked it.
+    orders = OrderRepository(db)
+    for question in questions:
+        assert orders.get_by_id(question.order_id).belongs_to(question.asked_by)
 
 
 def test_seed_allergens_are_on_the_allergen_list():

@@ -15,6 +15,7 @@
         {% if g.user.is_admin() %}
           <a href="{{ url_for('admin.items_overview') }}">Food items</a>
           <a href="{{ url_for('admin.orders') }}">Orders</a>
+          <a href="{{ url_for('admin.questions') }}">Questions</a>
         {% else %}
           {# Only customers order food, so admins don't get "My orders". #}
           <a href="{{ url_for('account.my_orders') }}">My orders</a>

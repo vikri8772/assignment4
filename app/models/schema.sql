@@ -1,7 +1,8 @@
 -- Running this file deletes all data and creates empty tables.
--- Questions get their tables when that feature is built.
 
--- Order tables first, because they point to users, event and food_item.
+-- Questions first, because they point to orders and users.
+DROP TABLE IF EXISTS question;
+-- Then the order tables, because they point to users, event and food_item.
 DROP TABLE IF EXISTS guest_group;
 DROP TABLE IF EXISTS order_line;
 DROP TABLE IF EXISTS orders;
@@ -91,4 +92,18 @@ CREATE TABLE guest_group (
     allergy_notes    TEXT NOT NULL DEFAULT '',
     dietary_notes    TEXT NOT NULL DEFAULT '',
     PRIMARY KEY (order_id, position)
+);
+
+-- A question has at most one answer, so the answer is stored in the same row.
+-- The three answer columns are NULL while the question is open.
+CREATE TABLE question (
+    id          TEXT PRIMARY KEY,
+    order_id    TEXT NOT NULL REFERENCES orders (id) ON DELETE CASCADE,
+    asked_by    TEXT NOT NULL REFERENCES users (id),
+    text        TEXT NOT NULL,
+    asked_at    TEXT NOT NULL,  -- ISO date and time
+    status      TEXT NOT NULL,  -- a QuestionStatus, 'OPEN' or 'ANSWERED'
+    answer_text TEXT,
+    answered_by TEXT REFERENCES users (id),
+    answered_at TEXT            -- ISO date and time
 );

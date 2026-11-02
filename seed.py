@@ -17,6 +17,8 @@ from app.models.food import Diet, Event, FoodItem
 from app.models.food_item_repository import FoodItemRepository
 from app.models.order import GuestGroup, Order, OrderLine, OrderStatus, PaymentStatus
 from app.models.order_repository import OrderRepository
+from app.models.question import Question
+from app.models.question_repository import QuestionRepository
 from app.models.user import Role, User
 from app.models.user_repository import UserRepository
 
@@ -225,6 +227,36 @@ ORDERS = [
 ]
 
 
+# Synthetic questions, so C5 and A4 have something to show.
+# Each question is (customer e-mail, index in ORDERS, text, asked at, answer text or None, answered at).
+QUESTIONS = [
+    (
+        "kari@example.test",
+        0,  # the wedding
+        "Can the cake for the children be made without milk?",
+        datetime(2026, 10, 21, 18, 40),
+        None,
+        None,
+    ),
+    (
+        "kari@example.test",
+        1,  # the julebord
+        "Can we get the food delivered at 17:00 instead of 18:00?",
+        datetime(2026, 10, 3, 10, 5),
+        "Yes, 17:00 is fine. The driver will call you 30 minutes before.",
+        datetime(2026, 10, 3, 13, 20),
+    ),
+    (
+        "ola@example.test",
+        3,  # the conference
+        "Is the wrap for the speaker with sesame allergy packed separately?",
+        datetime(2026, 10, 11, 9, 30),
+        None,
+        None,
+    ),
+]
+
+
 def seed():
     init_db()
     db = get_db()
@@ -246,9 +278,23 @@ def seed():
         order.user_id = users.get_by_email(email).id
         orders.add(order)
 
+    questions = QuestionRepository(db)
+    admin = users.get_by_email(USERS[0][1])
+    for email, order_index, text, asked_at, answer_text, answered_at in QUESTIONS:
+        question = Question(
+            order_id=ORDERS[order_index][1].id,
+            asked_by=users.get_by_email(email).id,
+            text=text,
+            asked_at=asked_at,
+        )
+        if answer_text:
+            question.answer(answer_text, admin)
+            question.given_answer.answered_at = answered_at  # a fixed time, so the seed is the same every run
+        questions.add(question)
+
     print(
         f"Seeded {len(EVENTS)} events, {len(DIETS)} diets, {len(FOOD_ITEMS)} food items, "
-        f"{len(USERS)} users and {len(ORDERS)} orders."
+        f"{len(USERS)} users, {len(ORDERS)} orders and {len(QUESTIONS)} questions."
     )
 
 

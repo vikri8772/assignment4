@@ -1,0 +1,35 @@
+{# C5: questions and answers about one order. See docs/plans/c5-qa-sequence.md.
+   Needs order, questions, question_text and max_question_length. #}
+<h3>Questions</h3>
+
+{% if questions %}
+  <ul class="questions">
+    {% for question in questions %}
+      <li class="question">
+        <p class="question-meta">
+          {{ question.asked_at.strftime('%Y-%m-%d %H:%M') }}
+          <span class="badge question-{{ question.status.value|lower }}">{{ question.status.label }}</span>
+        </p>
+        <p>{{ question.text }}</p>
+        {% if question.given_answer %}
+          <div class="answer">
+            <p class="question-meta">Ekte Mat answered {{ question.given_answer.answered_at.strftime('%Y-%m-%d %H:%M') }}</p>
+            <p>{{ question.given_answer.text }}</p>
+          </div>
+        {% else %}
+          <p class="question-meta">Not answered yet.</p>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No questions about this order yet.</p>
+{% endif %}
+
+<form method="post" action="{{ url_for('account.ask_question', order_id=order.id) }}" class="form question-form">
+  <label>
+    Ask a question about this order
+    <textarea name="text" rows="4" maxlength="{{ max_question_length }}" required>{{ question_text }}</textarea>
+  </label>
+  <button type="submit">Ask a question</button>
+</form>

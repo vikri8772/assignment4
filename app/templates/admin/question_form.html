@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Question – Ekte Mat Online{% endblock %}
+
+{% block content %}
+  <p><a href="{{ url_for('admin.questions') }}">← All questions</a></p>
+  <h2>Question <span class="badge question-{{ question.status.value|lower }}">{{ question.status.label }}</span></h2>
+
+  <dl class="order-facts">
+    <dt>Customer</dt><dd>{{ customer.name }} ({{ customer.email }})</dd>
+    <dt>Order</dt>
+    <dd><a href="{{ url_for('admin.order_detail', order_id=order.id) }}">{{ order.event.name }}, {{ order.event_date.isoformat() }}</a></dd>
+    <dt>Asked</dt><dd>{{ question.asked_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+  </dl>
+
+  <ul class="questions">
+    <li class="question">
+      <p>{{ question.text }}</p>
+      {% if question.given_answer %}
+        <div class="answer">
+          <p class="question-meta">Answered {{ question.given_answer.answered_at.strftime('%Y-%m-%d %H:%M') }}</p>
+          <p>{{ question.given_answer.text }}</p>
+        </div>
+      {% endif %}
+    </li>
+  </ul>
+
+  {% if question.is_answered() %}
+    <p>This question is answered. An answer can't be changed.</p>
+  {% else %}
+    <form method="post" action="{{ url_for('admin.answer_question', question_id=question.id) }}" class="form question-form">
+      <label>
+        Answer
+        <textarea name="text" rows="5" maxlength="{{ max_answer_length }}" required>{{ answer_text }}</textarea>
+      </label>
+      <button type="submit">Send answer</button>
+    </form>
+  {% endif %}
+{% endblock %}
