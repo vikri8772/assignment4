@@ -222,8 +222,7 @@ def test_list_shows_open_questions_first(admin, setup):
 
 
 def test_list_without_questions_shows_a_message(admin, db, setup):
-    with db:
-        db.execute("DELETE FROM question")
+    db.query("MATCH (q:Question) DETACH DELETE q")
 
     assert "No questions from customers yet." in admin.get("/admin/questions").get_data(as_text=True)
 

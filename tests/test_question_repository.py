@@ -139,8 +139,7 @@ def test_deleting_an_order_deletes_its_questions(db, repo, users, orders):
     question = make_question(orders[0], kari, datetime(2026, 10, 20, 9, 15))
     repo.add(question)
 
-    # OrderRepository has no delete yet, so the test removes the order with SQL.
-    with db:
-        db.execute("DELETE FROM orders WHERE id = ?", (orders[0].id,))
+    # OrderRepository has no delete yet, so the test removes the order with Cypher.
+    db.query("MATCH (o:Order {id: $id}) DETACH DELETE o", id=orders[0].id)
 
     assert repo.get_by_id(question.id) is None
