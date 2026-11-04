@@ -3,7 +3,7 @@
 INFO212 assignment 4: a first version of the ordering system for Ekte Mat AS, a fictional catering company in Bergen. Customers order catering online and admins manage food items, orders and questions.
 
 - Design diagrams: [docs/plans/README.md](docs/plans/README.md)
-- Built with Flask (MVC) and SQLite, moving to Neo4j in assignment 5.
+- Built with Flask (MVC) and **Neo4j** as the database (assignment 5). Graph model: [docs/plans/neo4j-graph-model.md](docs/plans/neo4j-graph-model.md)
 
 ## Install
 
@@ -31,15 +31,44 @@ Then install the packages:
 pip install -r requirements.txt
 ```
 
+## Neo4j
+
+The app stores its data in a local Neo4j database. Install it once:
+
+- **macOS:** `brew install neo4j`
+- **Windows:** install [Neo4j Desktop](https://neo4j.com/download/), create a local database and start it.
+
+Then give the `neo4j` user a password. On macOS, before the first start:
+
+```bash
+neo4j-admin dbms set-initial-password ektemat-dev
+```
+
+In Neo4j Desktop you choose the password when you create the database.
+
+Copy the settings file and change `NEO4J_PASSWORD` if you chose another password. `.env` is not committed.
+
+```bash
+cp .env.example .env
+```
+
+Start Neo4j (on macOS; in Neo4j Desktop, press Start):
+
+```bash
+neo4j start
+```
+
+The Neo4j Browser at http://localhost:7474 shows the graph. Try `MATCH (n) RETURN n`. Stop the database with `neo4j stop`.
+
 ## Seed
 
-Creates the database with synthetic sample data: events, diets, food items and test users. **This deletes all existing data.**
+Fills Neo4j with synthetic sample data: events, diets, food items, test users, orders and questions. **This deletes all existing data.** Neo4j must be running.
 
 ```bash
 python seed.py
 ```
 
-To start over with an empty database instead, run `flask --app app init-db`.
+To start over with an empty database instead, run `flask --app app init-db`. It deletes all nodes and creates the constraints.
 
 The seeded food items get their pictures from `app/static/img/food/`. These food photos are taken from recipe websites for illustration in this student project and are not ours. Pictures that admins upload are saved in `app/static/uploads/`, which is not committed.
 
@@ -64,6 +93,8 @@ Optional: set the environment variable `SECRET_KEY` to keep people logged in whe
 ```bash
 pytest
 ```
+
+The tests need Neo4j running, and they **empty the database**. Run `python seed.py` afterwards to get the sample data back.
 
 ## Project structure
 

@@ -16,18 +16,20 @@ Flask backend with Jinja2 templates. The layers must stay visible in the folder 
     tests/
 
 - Controllers call repositories and domain classes. They never access storage directly.
-- Storage is SQLite for now. Neo4j will replace it in assignment 5, so keep all storage code behind the repository classes (`FoodItemRepository`, `OrderRepository`, ...).
-- Tables are in `app/models/schema.sql`. Repositories get their connection from `get_db()` in `app/models/db.py`.
+- Storage is Neo4j. Only the repository classes (`FoodItemRepository`, `OrderRepository`, ...) and `app/models/db.py` touch it; nothing outside `app/models/` imports `neo4j`.
+- The graph model (nodes, relationships, constraints) is in `docs/plans/neo4j-graph-model.md`. Constraints are created by `init_db()` in `app/models/db.py`.
+- Repositories get a `Database` from `get_db()` and run Cypher with `db.query()` / `db.query_one()`. Write each save as one Cypher statement, so it is saved completely or not at all. Neo4j has no foreign keys: `MATCH` referenced nodes and raise `IntegrityError` (from `db.py`) when one is missing.
 - Protect routes with `@login_required` or `@admin_required` from `app/controllers/auth.py`. The logged-in user is `g.user`.
 - How to add a feature (domain class, table, repository, seed data, tests): `docs/plans/skeleton-plan.md`.
 
 ## Run and test
-Activate `.venv` first. Full setup steps are in `README.md`.
+Activate `.venv` first. Full setup steps, including installing Neo4j and `.env`, are in `README.md`.
 
     pip install -r requirements.txt
+    neo4j start                     # Neo4j must run for the app, seed.py and pytest
     python seed.py                  # wipes the database and loads synthetic test data
     flask --app app run --debug     # http://127.0.0.1:5000
-    pytest
+    pytest                          # also wipes the database: run seed.py afterwards
 
 Test logins are listed in `seed.py` and `README.md`.
 

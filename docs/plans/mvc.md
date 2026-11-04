@@ -1,6 +1,6 @@
 # MVC overview
 
-All controllers, views and models in Ekte Mat Online and how they connect. Controllers only reach storage through the repository classes, so SQLite can be swapped for Neo4j in assignment 5.
+All controllers, views and models in Ekte Mat Online and how they connect. Controllers only reach storage through the repository classes, so SQLite could be swapped for Neo4j (assignment 5) without changing controllers or views.
 
 ````mermaid
 flowchart LR
