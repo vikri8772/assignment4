@@ -1,127 +1,161 @@
 from decimal import Decimal
 
+from app.models.db import IntegrityError
 from app.models.food import Diet, Event, FoodItem
+
+# Returns a food item with the names of its events and diets, sorted.
+# Used at the end of every query that loads food items.
+_RETURN_ITEM = """
+    RETURN f,
+           COLLECT { MATCH (f)-[:SERVED_AT]->(e:Event) RETURN e.name ORDER BY e.name } AS events,
+           COLLECT { MATCH (f)-[:SUITS]->(d:Diet) RETURN d.name ORDER BY d.name } AS diets
+"""
+
+# Finds the events and diets an item should link to. If one of them doesn't exist,
+# no row is left after the WHERE, so nothing is saved (like a foreign key in SQLite).
+_MATCH_EVENTS_AND_DIETS = """
+    OPTIONAL MATCH (e:Event) WHERE e.name IN $events
+    WITH f, collect(e) AS events
+    OPTIONAL MATCH (d:Diet) WHERE d.name IN $diets
+    WITH f, events, collect(d) AS diets
+    WHERE size(events) = size($events) AND size(diets) = size($diets)
+"""
 
 
 class FoodItemRepository:
-    """Saves and loads FoodItems. The rest of the app never sees the tables."""
+    """Saves and loads FoodItems as (:FoodItem) nodes linked to (:Event) and (:Diet) nodes.
+    The rest of the app never sees Neo4j. See docs/plans/neo4j-graph-model.md."""
 
     def __init__(self, db):
         self.db = db
 
     def get_all(self):
-        rows = self.db.execute("SELECT * FROM food_item ORDER BY name").fetchall()
+        rows = self.db.query("MATCH (f:FoodItem)" + _RETURN_ITEM + "ORDER BY f.name")
         return [self._to_food_item(row) for row in rows]
 
     def get_by_id(self, id):
-        row = self.db.execute("SELECT * FROM food_item WHERE id = ?", (id,)).fetchone()
+        row = self.db.query_one("MATCH (f:FoodItem {id: $id})" + _RETURN_ITEM, id=id)
         if row is None:
             return None
         return self._to_food_item(row)
 
     def get_published_items(self, event):
-        rows = self.db.execute(
-            """
-            SELECT food_item.* FROM food_item
-            JOIN food_item_event ON food_item_event.food_item_id = food_item.id
-            WHERE food_item.published = 1 AND food_item_event.event_name = ?
-            ORDER BY food_item.name
-            """,
-            (event.name,),
-        ).fetchall()
+        rows = self.db.query(
+            "MATCH (f:FoodItem {published: true})-[:SERVED_AT]->(:Event {name: $event})"
+            + _RETURN_ITEM
+            + "ORDER BY f.name",
+            event=event.name,
+        )
         return [self._to_food_item(row) for row in rows]
 
     def add(self, item):
-        # "with self.db" saves everything together, or nothing if something fails.
-        with self.db:
-            self.db.execute(
-                """
-                INSERT INTO food_item (id, name, description, price, min_order, picture_path, published)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-                """,
-                (item.id, item.name, item.desc, str(item.price), item.min_order, item.picture_path, item.published),
-            )
-            self._save_lists(item)
+        # One statement: the item and its links are saved together, or not at all.
+        row = self.db.query_one(
+            "WITH null AS f"
+            + _MATCH_EVENTS_AND_DIETS
+            + """
+            CREATE (f2:FoodItem)
+            SET f2 = $props
+            FOREACH (e IN events | CREATE (f2)-[:SERVED_AT]->(e))
+            FOREACH (d IN diets | CREATE (f2)-[:SUITS]->(d))
+            RETURN f2.id AS id
+            """,
+            props=self._properties(item),
+            **self._link_names(item),
+        )
+        if row is None:
+            raise IntegrityError(f"{item.name} was not saved: an event or diet doesn't exist.")
 
     def update(self, item):
-        with self.db:
-            self.db.execute(
-                """
-                UPDATE food_item
-                SET name = ?, description = ?, price = ?, min_order = ?, picture_path = ?, published = ?
-                WHERE id = ?
-                """,
-                (item.name, item.desc, str(item.price), item.min_order, item.picture_path, item.published, item.id),
-            )
-            # Simplest way to update the lists: remove the old links and save the new ones.
-            self.db.execute("DELETE FROM food_item_event WHERE food_item_id = ?", (item.id,))
-            self.db.execute("DELETE FROM food_item_diet WHERE food_item_id = ?", (item.id,))
-            self.db.execute("DELETE FROM food_item_allergen WHERE food_item_id = ?", (item.id,))
-            self._save_lists(item)
+        # Simplest way to update the lists: remove the old links and make the new ones.
+        row = self.db.query_one(
+            "MATCH (f:FoodItem {id: $id})"
+            + _MATCH_EVENTS_AND_DIETS
+            + """
+            SET f = $props
+            WITH f, events, diets
+            CALL (f) { MATCH (f)-[r:SERVED_AT|SUITS]->() DELETE r }
+            FOREACH (e IN events | CREATE (f)-[:SERVED_AT]->(e))
+            FOREACH (d IN diets | CREATE (f)-[:SUITS]->(d))
+            RETURN f.id AS id
+            """,
+            id=item.id,
+            props=self._properties(item),
+            **self._link_names(item),
+        )
+        if row is None:
+            raise IntegrityError(f"{item.name} was not saved: it, or one of its events or diets, doesn't exist.")
 
     def delete(self, id):
-        # The links to events, diets and allergens are deleted too (ON DELETE CASCADE).
-        with self.db:
-            self.db.execute("DELETE FROM food_item WHERE id = ?", (id,))
+        # An item that is in an order can't be deleted (A1), so the order keeps pointing to it.
+        row = self.db.query_one(
+            """
+            MATCH (f:FoodItem {id: $id})
+            WITH f, EXISTS { (:Order)-[:CONTAINS]->(f) } AS used
+            FOREACH (_ IN CASE WHEN used THEN [] ELSE [1] END | DETACH DELETE f)
+            RETURN used
+            """,
+            id=id,
+        )
+        if row is not None and row["used"]:
+            raise IntegrityError("The food item is used in orders, so it can't be deleted.")
 
     def is_used_in_orders(self, id):
-        # True if any order has a line with this item. Such items can't be deleted (A1).
-        row = self.db.execute("SELECT 1 FROM order_line WHERE food_item_id = ? LIMIT 1", (id,)).fetchone()
-        return row is not None
+        # True if any order CONTAINS this item. Such items can't be deleted (A1).
+        row = self.db.query_one(
+            "MATCH (f:FoodItem {id: $id}) RETURN EXISTS { (:Order)-[:CONTAINS]->(f) } AS used", id=id
+        )
+        return row is not None and row["used"]
 
     # Events and diets are fixed lists, created by seed.py.
 
     def get_events(self):
-        rows = self.db.execute("SELECT name FROM event ORDER BY name").fetchall()
+        rows = self.db.query("MATCH (e:Event) RETURN e.name AS name ORDER BY name")
         return [Event(row["name"]) for row in rows]
 
     def add_event(self, event):
-        with self.db:
-            self.db.execute("INSERT INTO event (name) VALUES (?)", (event.name,))
+        self.db.query("CREATE (:Event {name: $name})", name=event.name)
 
     def get_diets(self):
-        rows = self.db.execute("SELECT name FROM diet ORDER BY name").fetchall()
+        rows = self.db.query("MATCH (d:Diet) RETURN d.name AS name ORDER BY name")
         return [Diet(row["name"]) for row in rows]
 
     def add_diet(self, diet):
-        with self.db:
-            self.db.execute("INSERT INTO diet (name) VALUES (?)", (diet.name,))
+        self.db.query("CREATE (:Diet {name: $name})", name=diet.name)
 
-    def _save_lists(self, item):
-        self.db.executemany(
-            "INSERT INTO food_item_event (food_item_id, event_name) VALUES (?, ?)",
-            [(item.id, event.name) for event in item.events],
-        )
-        self.db.executemany(
-            "INSERT INTO food_item_diet (food_item_id, diet_name) VALUES (?, ?)",
-            [(item.id, diet.name) for diet in item.diets],
-        )
-        self.db.executemany(
-            "INSERT INTO food_item_allergen (food_item_id, allergen) VALUES (?, ?)",
-            [(item.id, allergen) for allergen in item.allergens],
-        )
+    def _properties(self, item):
+        # The node's properties. A None picture path is left out, because Neo4j doesn't store nulls.
+        props = {
+            "id": item.id,
+            "name": item.name,
+            "desc": item.desc,
+            "price": str(item.price),  # Decimal as text, e.g. "129.00"
+            "minOrder": item.min_order,
+            "published": item.published,
+            "allergens": list(item.allergens),
+        }
+        if item.picture_path is not None:
+            props["picturePath"] = item.picture_path
+        return props
+
+    def _link_names(self, item):
+        # The names without duplicates, so the size check in _MATCH_EVENTS_AND_DIETS works.
+        return {
+            "events": list(dict.fromkeys(e.name for e in item.events)),
+            "diets": list(dict.fromkeys(d.name for d in item.diets)),
+        }
 
     def _to_food_item(self, row):
-        # Turns one food_item row, plus its rows in the link tables, into a FoodItem.
-        id = row["id"]
-        events = self.db.execute(
-            "SELECT event_name FROM food_item_event WHERE food_item_id = ? ORDER BY event_name", (id,)
-        ).fetchall()
-        diets = self.db.execute(
-            "SELECT diet_name FROM food_item_diet WHERE food_item_id = ? ORDER BY diet_name", (id,)
-        ).fetchall()
-        allergens = self.db.execute(
-            "SELECT allergen FROM food_item_allergen WHERE food_item_id = ? ORDER BY allergen", (id,)
-        ).fetchall()
+        f = row["f"]
         return FoodItem(
-            id=id,
-            name=row["name"],
-            desc=row["description"],
-            price=Decimal(row["price"]),
-            min_order=row["min_order"],
-            picture_path=row["picture_path"],
-            published=bool(row["published"]),
-            events=[Event(r["event_name"]) for r in events],
-            diets=[Diet(r["diet_name"]) for r in diets],
-            allergens=[r["allergen"] for r in allergens],
+            id=f["id"],
+            name=f["name"],
+            desc=f["desc"],
+            price=Decimal(f["price"]),
+            min_order=f["minOrder"],
+            picture_path=f.get("picturePath"),
+            published=f["published"],
+            events=[Event(name) for name in row["events"]],
+            diets=[Diet(name) for name in row["diets"]],
+            allergens=sorted(f.get("allergens", [])),  # sorted, as they were in SQLite
         )

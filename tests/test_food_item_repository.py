@@ -1,8 +1,8 @@
-import sqlite3
 from decimal import Decimal
 
 import pytest
 
+from app.models.db import IntegrityError
 from app.models.food import Diet, Event, FoodItem
 from app.models.food_item_repository import FoodItemRepository
 
@@ -82,13 +82,13 @@ def test_delete_removes_item_and_its_links(repo, db):
     repo.delete(item.id)
 
     assert repo.get_by_id(item.id) is None
-    assert db.execute("SELECT * FROM food_item_event").fetchall() == []
+    assert db.query("MATCH (:FoodItem)-[r:SERVED_AT]->() RETURN r") == []
 
 
 def test_item_with_unknown_event_is_not_saved_at_all(repo):
     item = make_item(events=[Event("No such event")])
 
-    with pytest.raises(sqlite3.IntegrityError):
+    with pytest.raises(IntegrityError):
         repo.add(item)
 
     assert repo.get_all() == []
