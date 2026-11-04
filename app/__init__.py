@@ -1,13 +1,20 @@
 import os
 import secrets
 
+from dotenv import load_dotenv
 from flask import Flask
+
+# Reads .env (not committed) into the environment. See .env.example.
+load_dotenv()
 
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
-        DATABASE=os.path.join(app.instance_path, "ektemat.db"),
+        # The Neo4j server. The defaults match a local Neo4j, see README.md.
+        NEO4J_URI=os.environ.get("NEO4J_URI", "bolt://localhost:7687"),
+        NEO4J_USER=os.environ.get("NEO4J_USER", "neo4j"),
+        NEO4J_PASSWORD=os.environ.get("NEO4J_PASSWORD", ""),
         # Signs the login cookie. Set SECRET_KEY in .env; without it, a random
         # key is made at startup and everyone is logged out on every restart.
         SECRET_KEY=os.environ.get("SECRET_KEY") or secrets.token_hex(32),
@@ -19,8 +26,6 @@ def create_app(test_config=None):
     if test_config is not None:
         app.config.update(test_config)
 
-    # The instance/ folder holds the database file. It is in .gitignore.
-    os.makedirs(app.instance_path, exist_ok=True)
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
     from app.models import db
