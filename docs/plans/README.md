@@ -11,12 +11,14 @@ File names follow `<feature>-<topic>-<type>.md`, for example `c3-checkout-sequen
 - [a3-c4-orders-plan.md](a3-c4-orders-plan.md) – orders: the Order model, A3 admin order pages and C4 my orders
 - [c2-c3-checkout-plan.md](c2-c3-checkout-plan.md) – C2 cart and C3 checkout (Torben)
 - [a4-c5-questions-plan.md](a4-c5-questions-plan.md) – questions: the Question model, C5 questions on my orders and A4 answering them (Pablo)
+- [neo4j-storage-plan.md](neo4j-storage-plan.md) – Neo4j as the storage layer (assignment 5)
 
 ## Overview
 
 | Diagram | What it shows |
 |---|---|
 | [mvc.md](mvc.md) | Controllers, views and models, and how they connect |
+| [neo4j-graph-model.md](neo4j-graph-model.md) | Nodes, relationships and constraints in Neo4j |
 | [domain-orders-class.md](domain-orders-class.md) | `User` + `Role`, orders, guest groups, order lines |
 | [domain-food-class.md](domain-food-class.md) | Food items, events, diets |
 | [domain-qa-class.md](domain-qa-class.md) | Questions and answers |
