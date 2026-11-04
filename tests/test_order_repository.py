@@ -1,9 +1,9 @@
-import sqlite3
 from datetime import date, datetime
 from decimal import Decimal
 
 import pytest
 
+from app.models.db import IntegrityError
 from app.models.food import Event, FoodItem
 from app.models.food_item_repository import FoodItemRepository
 from app.models.order import GuestGroup, Order, OrderLine, OrderStatus, PaymentStatus
@@ -137,15 +137,15 @@ def test_update_saves_new_statuses(repo, kari, soup):
 def test_order_with_unknown_food_item_is_not_saved_at_all(repo, db, kari, soup):
     order = make_order(kari, soup, lines=[OrderLine("no-such-item", "Ghost", 1, Decimal("1"))])
 
-    with pytest.raises(sqlite3.IntegrityError):
+    with pytest.raises(IntegrityError):
         repo.add(order)
 
     assert repo.find() == []
-    assert db.execute("SELECT * FROM guest_group").fetchall() == []
+    assert db.query("MATCH (g:GuestGroup) RETURN g") == []
 
 
 def test_food_item_in_an_order_cannot_be_deleted(repo, db, kari, soup):
     repo.add(make_order(kari, soup))
 
-    with pytest.raises(sqlite3.IntegrityError):
+    with pytest.raises(IntegrityError):
         FoodItemRepository(db).delete(soup.id)
